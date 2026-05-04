@@ -24,5 +24,6 @@
 
 .bn {
   margin: 0;
+  height: 100vh;
 }
 </style>
