@@ -13,6 +13,14 @@ export default defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
     files: ['**/*.{vue,ts,mts,tsx}'],
+    rules: {
+      'vue/no-deprecated-slot-attribute': [
+        'error',
+        {
+          ignore: [/^mdui-/],
+        },
+      ],
+    },
   },
 
   globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
