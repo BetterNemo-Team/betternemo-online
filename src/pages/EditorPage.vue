@@ -1,7 +1,9 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+</script>
 
 <template>
   <mdui-navigation-rail contained divider value="code" class="navigation-rail">
+    <mdui-button-icon icon="menu" slot="top" class="phone-menu-button"></mdui-button-icon>
     <mdui-navigation-rail-item icon="code" value="code"></mdui-navigation-rail-item>
     <mdui-navigation-rail-item icon="people" value="actor"></mdui-navigation-rail-item>
     <mdui-button-icon icon="play_arrow" slot="bottom" variant="filled"></mdui-button-icon>
@@ -18,5 +20,15 @@
 
 .bn {
   height: 100vh;
+}
+
+.phone-menu-button {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .phone-menu-button {
+    display: block;
+  }
 }
 </style>
