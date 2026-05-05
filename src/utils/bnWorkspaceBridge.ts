@@ -170,13 +170,13 @@ export class BNWorkspaceBridge {
 
   initWebviewData(): boolean {
     const initPayload: InitWebviewDataPayload = {
-      "avatar_url": "【用户头像URL】",
+      "avatar_url": "https://img.cdn1.vip/i/69f9c7ab0388b_1777977259.webp",
       "bcm_version": "0.16.2",
       "context_menu_with_set_block_visibility": true,
       "enable_hide": false,
       "is_login": true,
       "is_pad": true,
-      "nickname": "【用户昵称】",
+      "nickname": "测试用户",
       "sidebar_width": 64,
       "stage_position": {
         "portrait": {
@@ -194,7 +194,7 @@ export class BNWorkspaceBridge {
       "toolbox_mode": "normal",
       "translucent_block_visible": "translucent",
       "user_id": "【用户ID】",
-      "user_level": 1,
+      "user_level": 9999,
       "user_token": "【用户TOKEN】",
       "webview_height": 0,
       "work_id": "【作品ID】"

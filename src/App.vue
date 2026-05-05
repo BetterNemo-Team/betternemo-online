@@ -2,7 +2,13 @@
 import { ref, provide } from "vue";
 import type { Dialog } from 'mdui/components/dialog.js';
 
+import AppBarMenu from "./components/AppBarMenu.vue";
+
+import { useBNStateStore } from "@/stores/bnState";
+
+const bnState = useBNStateStore()
 const aboutDialog = ref<Dialog | null>(null)
+const showOperate = ref(false)
 const openAbout = () => {
   if (!aboutDialog.value) {
     return
@@ -23,16 +29,20 @@ provide('aboutDialog', aboutDialog)
 <template>
   <mdui-layout>
     <mdui-top-app-bar class="top-app-bar" scroll-behavior="elevate" scroll-threshold="0">
-      <mdui-dropdown>
-        <mdui-button-icon icon="menu" slot="trigger" class="pc-menu-button"></mdui-button-icon>
-        <mdui-menu>
-          <mdui-menu-item>新建作品</mdui-menu-item>
-          <mdui-menu-item>打开作品</mdui-menu-item>
-          <mdui-divider></mdui-divider>
-          <mdui-menu-item @click="openAbout()">关于 BetterNemo-Online</mdui-menu-item>
-        </mdui-menu>
-      </mdui-dropdown>
-      <mdui-top-app-bar-title>BetterNemo-Online</mdui-top-app-bar-title>
+      <mdui-button-icon icon="web"></mdui-button-icon>
+      <mdui-top-app-bar-title>
+        <div class="top-app-bar-title">
+          <span>BetterNemo-Online</span>
+          <AppBarMenu v-if="!showOperate" />
+        </div>
+      </mdui-top-app-bar-title>
+      <div class="show-more-operate">
+        <span>展开</span>
+        <mdui-switch checked-icon="" :checked="showOperate" @change="showOperate = $event.target.checked"></mdui-switch>
+      </div>
+    </mdui-top-app-bar>
+    <mdui-top-app-bar class="operate-top-app-bar" v-if="showOperate">
+      <AppBarMenu />
     </mdui-top-app-bar>
     <RouterView />
   </mdui-layout>
@@ -47,8 +57,30 @@ provide('aboutDialog', aboutDialog)
 </template>
 
 <style scoped>
+.top-app-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.show-more-operate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.operate-top-app-bar {
+  gap: 16px;
+  padding-left: 24px;
+  padding-top: 2px;
+  height: 52px;
+  z-index: 1;
+}
+
 @media (max-width: 768px) {
-  .top-app-bar {
+
+  .top-app-bar,
+  .operate-top-app-bar {
     display: none;
   }
 }

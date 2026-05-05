@@ -28,7 +28,7 @@ const playWork = () => {
         <mdui-button-icon icon="menu" slot="top" class="phone-menu-button"></mdui-button-icon>
       </div>
       <mdui-menu>
-        <mdui-menu-item>新建作品</mdui-menu-item>
+        <mdui-menu-item @click="bnState.newWork(true)">新建作品</mdui-menu-item>
         <mdui-menu-item>打开作品</mdui-menu-item>
         <mdui-divider></mdui-divider>
         <mdui-menu-item @click="openAbout()">关于 BetterNemo-Online</mdui-menu-item>
