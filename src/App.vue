@@ -38,7 +38,8 @@ provide('aboutDialog', aboutDialog)
   </mdui-layout>
   <mdui-dialog class="about-dialog" ref="aboutDialog" close-on-overlay-click>
     <span class="about-dialog-description">BetterNemo-Online<br>
-      Powered By BetterNemo开发组
+      Powered By BetterNemo开发组<br>
+      产品任何疑惑及问题其最终解释权归BetterNemo团队所有
     </span>
     <mdui-button slot="action" @click="closeAbout()">确定</mdui-button>
   </mdui-dialog>

@@ -2,6 +2,11 @@
 import { ref, inject } from "vue";
 import type { Dialog } from 'mdui/components/dialog.js';
 
+import { useBNStateStore } from "@/stores/bnState";
+
+import BN from "@/components/BN.vue";
+
+const bnState = useBNStateStore()
 const aboutDialog = inject('aboutDialog', ref<Dialog | null>(null))
 const openAbout = () => {
   if (!aboutDialog.value) {
@@ -9,10 +14,15 @@ const openAbout = () => {
   };
   aboutDialog.value.open = true;
 }
+
+const playWork = () => {
+  bnState.isPlay = !bnState.isPlay
+  bnState.isActorPage = !bnState.isActorPage
+}
 </script>
 
 <template>
-  <mdui-navigation-rail contained divider value="code" class="navigation-rail">
+  <mdui-navigation-rail contained divider :value="bnState.isActorPage ? 'actor' : 'code'" class="navigation-rail">
     <mdui-dropdown placement="right-start">
       <div slot="trigger">
         <mdui-button-icon icon="menu" slot="top" class="phone-menu-button"></mdui-button-icon>
@@ -24,12 +34,15 @@ const openAbout = () => {
         <mdui-menu-item @click="openAbout()">关于 BetterNemo-Online</mdui-menu-item>
       </mdui-menu>
     </mdui-dropdown>
-    <mdui-navigation-rail-item icon="code" value="code"></mdui-navigation-rail-item>
-    <mdui-navigation-rail-item icon="people" value="actor"></mdui-navigation-rail-item>
-    <mdui-button-icon icon="play_arrow" slot="bottom" variant="filled"></mdui-button-icon>
+    <mdui-navigation-rail-item icon="code" value="code"
+      @click="bnState.isActorPage = false"></mdui-navigation-rail-item>
+    <mdui-navigation-rail-item icon="people" value="actor"
+      @click="bnState.isActorPage = true"></mdui-navigation-rail-item>
+    <mdui-button-icon :icon="!bnState.isPlay ? 'play_arrow' : 'pause'" slot="bottom" variant="filled"
+      @click="playWork()"></mdui-button-icon>
   </mdui-navigation-rail>
   <mdui-layout-main class="bn">
-    <h1>占位符</h1>
+    <BN />
   </mdui-layout-main>
 </template>
 
