@@ -13,14 +13,6 @@ export default defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
     files: ['**/*.{vue,ts,mts,tsx}'],
-    rules: {
-      'vue/no-deprecated-slot-attribute': [
-        'error',
-        {
-          ignore: [/^mdui-/],
-        },
-      ],
-    },
   },
 
   globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
@@ -31,4 +23,13 @@ export default defineConfigWithVueTs(
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
 
   skipFormatting,
+
+  {
+    name: 'custom/override-vue-slot-rule',
+    rules: {
+      'vue/no-deprecated-slot-attribute': 'off',
+      'vue/no-deprecated-slot-scope-attribute': 'off',
+      "@typescript-eslint/no-explicit-any": "off"
+    },
+  },
 )
