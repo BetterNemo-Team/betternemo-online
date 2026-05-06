@@ -610,10 +610,13 @@ export const useBNStateStore = defineStore('bnState', () => {
   const currentActor = ref("")
   const actorList = ref<any>([])
   const iframeRef = ref<HTMLIFrameElement | null>(null);
-  function goWork(workJson: any) {
+  function goWork(workJson: any, reload?: boolean) {
     try {
-      if (!iframeRef) {
+      if (!iframeRef || !iframeRef.value || !iframeRef.value.contentWindow) {
         return
+      }
+      if (reload) {
+        iframeRef.value.contentWindow.location.reload();
       }
       clearBridgeInstance()
       setBridgeInstance(new BNWorkspaceBridge(iframeRef))

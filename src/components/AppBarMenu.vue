@@ -7,6 +7,7 @@ import { useBNStateStore } from "@/stores/bnState";
 
 const bnState = useBNStateStore()
 const aboutDialog = inject('aboutDialog', ref<Dialog | null>(null))
+const fileOpen = ref(null)
 const openAbout = () => {
   if (!aboutDialog.value) {
     return
@@ -19,6 +20,31 @@ const closeAbout = () => {
   };
   aboutDialog.value.open = false;
 }
+
+const openFileWindow = () => {
+  if (!fileOpen.value) {
+    return
+  };
+  fileOpen.value.click()
+}
+
+const openFile = () => {
+  try {
+    if (fileOpen.value.files.length <= 0) {
+      return
+    }
+    const file = fileOpen.value.files[0]
+    const reader = new FileReader()
+    reader.onload = function () {
+      const result = reader.result
+      bnState.goWork(JSON.parse(result), true)
+    };
+    reader.readAsText(file);
+  } catch (e) {
+    console.log(e)
+  }
+}
+
 </script>
 <template>
   <div class="top-app-bar-menu">
@@ -27,6 +53,8 @@ const closeAbout = () => {
       <mdui-menu>
         <mdui-menu-item @click="bnState.newWork(true)">新建作品</mdui-menu-item>
         <mdui-menu-item>打开作品</mdui-menu-item>
+        <mdui-divider></mdui-divider>
+        <mdui-menu-item @click="openFileWindow()">打开本地作品</mdui-menu-item>
       </mdui-menu>
     </mdui-dropdown>
     <mdui-dropdown>
@@ -36,11 +64,16 @@ const closeAbout = () => {
       </mdui-menu>
     </mdui-dropdown>
   </div>
+  <input type="file" class="file-open" ref="fileOpen" accept=".json" title="打开本地作品" @change="openFile()"></input>
 </template>
 <style scoped>
 .top-app-bar-menu {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.file-open {
+  display: none;
 }
 </style>
