@@ -559,7 +559,7 @@ export const useBNStateStore = defineStore('bnState', () => {
       },
     },
     toolbox: {
-      devices: [],
+      devices: [] as any[],
     },
     variable: {
       variable_dict: {
