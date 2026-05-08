@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { ref, provide, watchEffect } from "vue";
 import type { Dialog } from 'mdui/components/dialog.js';
-
 import { useBNStateStore } from "@/stores/bnState";
 
 import AppBarMenu from "./components/AppBarMenu.vue";
+import MonacoEditor from "./components/MonacoEditor.vue";
 
 //import { useBNStateStore } from "@/stores/bnState";
 //const bnState = useBNStateStore()
 
 const bnState = useBNStateStore()
 const aboutDialog = ref<Dialog | null>(null)
+const JSONEditorDialog = ref<Dialog | null>(null)
 const showOperate = ref(window.localStorage.getItem('showOperate') == 'true')
+const isChangeWorkName = ref(false)
 
 const closeAbout = () => {
   if (!aboutDialog.value) {
@@ -25,6 +27,7 @@ watchEffect(() => {
 })
 
 provide('aboutDialog', aboutDialog)
+provide('JSONEditorDialog', JSONEditorDialog)
 document.title = `BetterNemo-Online : ${bnState.bcmJson.project_name}`
 </script>
 
@@ -34,15 +37,14 @@ document.title = `BetterNemo-Online : ${bnState.bcmJson.project_name}`
       <mdui-button-icon icon="web"></mdui-button-icon>
       <mdui-top-app-bar-title>
         <div class="top-app-bar-title">
-          <span>BetterNemo-Online : {{ bnState?.bcmJson?.project_name }}</span>
+          <span>BetterNemo-Online :</span>
+          <span v-if="!isChangeWorkName" @click="isChangeWorkName = true">{{ bnState?.bcmJson?.project_name }}</span>
+          <mdui-text-field class="top-app-bar-work-name-field" v-else variant="outlined"
+            @change="bnState.bcmJson.project_name = $event.target.value; isChangeWorkName = false" :value="bnState?.bcmJson?.project_name ??
+              '默认作品名'"></mdui-text-field>
           <AppBarMenu v-if="!showOperate" />
         </div>
       </mdui-top-app-bar-title>
-      <div class="top-app-bar-work-name">
-        <mdui-text-field variant="outlined" @change="bnState.bcmJson.project_name = $event.target.value"
-          class="top-app-bar-work-name-field" :value="bnState?.bcmJson?.project_name ??
-            '默认作品名'"></mdui-text-field>
-      </div>
       <div class="show-more-operate">
         <span>展开</span>
         <mdui-switch checked-icon="" :checked="showOperate" @change="showOperate = $event.target.checked"></mdui-switch>
@@ -60,7 +62,13 @@ document.title = `BetterNemo-Online : ${bnState.bcmJson.project_name}`
     </span>
     <mdui-button slot="action" @click="closeAbout()">确定</mdui-button>
   </mdui-dialog>
-
+  <!--
+  MDUI的弹窗组件,我草拟妈!
+  <mdui-dialog :open="test">
+    <MonacoEditor />
+    <mdui-button slot="action">确定</mdui-button>
+  </mdui-dialog>
+  -->
 </template>
 
 <style scoped>
@@ -70,20 +78,9 @@ document.title = `BetterNemo-Online : ${bnState.bcmJson.project_name}`
   gap: 16px;
 }
 
-.top-app-bar-work-name {
-  position: absolute;
-  width: 35%;
-  min-width: 300px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
 .top-app-bar-work-name-field {
-  height: 42px;
-}
-
-.top-app-bar-work-name-field::part(container) {
-  border-radius: 99999px;
+  height: 40px;
+  max-width: 300px;
 }
 
 .show-more-operate {

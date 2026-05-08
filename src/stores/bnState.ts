@@ -647,6 +647,7 @@ export const useBNStateStore = defineStore('bnState', () => {
         }
       }
 
+      actorList.value = []
       // 解析bcmJson
       Object.entries(bcmJson.value.actors.actors_dict).forEach(([_, value]) => {
         actorList.value.push(value)
