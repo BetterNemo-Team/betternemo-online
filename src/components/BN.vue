@@ -31,12 +31,30 @@ onBeforeUnmount(() => {
 
 watchEffect(() => {
   const { isActorPage, isPlay } = bnState
+  const workName = bnState.bcmJson.project_name
   const bridgeInstance: any = getBridgeInstance()
   if (!bridgeInstance) {
     return
   }
+  document.title = `BetterNemo-Online : ${workName}`
   bridgeInstance.sendNativeMessage('SET_THEATRE_VISIBLE', isActorPage)
   bridgeInstance.sendNativeMessage('SET_RUN_STATE', isPlay)
+  const iframeWin: any = bnState.iframeRef?.contentWindow;
+  if (iframeWin && isActorPage) {
+    const injectionDiv: HTMLDivElement = iframeWin.document.querySelector('.injectionDiv')
+    const blocklyFlyout: HTMLDivElement = iframeWin.document.querySelector('.blocklyFlyout')
+    if (injectionDiv) {
+      injectionDiv.style.setProperty('width', 'calc(100% - 450px)', 'important')
+      blocklyFlyout.style.setProperty('left', '-450px')
+    }
+  } else if (!isActorPage) {
+    const injectionDiv: HTMLDivElement = iframeWin.document.querySelector('.injectionDiv')
+    const blocklyFlyout: HTMLDivElement = iframeWin.document.querySelector('.blocklyFlyout')
+    if (injectionDiv) {
+      injectionDiv.style.setProperty('width', '100%', 'important')
+      blocklyFlyout.style.setProperty('left', '0px')
+    }
+  }
 })
 </script>
 

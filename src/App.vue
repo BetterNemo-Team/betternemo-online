@@ -25,6 +25,7 @@ watchEffect(() => {
 })
 
 provide('aboutDialog', aboutDialog)
+document.title = `BetterNemo-Online : ${bnState.bcmJson.project_name}`
 </script>
 
 <template>
@@ -33,7 +34,7 @@ provide('aboutDialog', aboutDialog)
       <mdui-button-icon icon="web"></mdui-button-icon>
       <mdui-top-app-bar-title>
         <div class="top-app-bar-title">
-          <span>BetterNemo-Online</span>
+          <span>BetterNemo-Online : {{ bnState?.bcmJson?.project_name }}</span>
           <AppBarMenu v-if="!showOperate" />
         </div>
       </mdui-top-app-bar-title>
