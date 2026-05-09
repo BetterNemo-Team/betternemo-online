@@ -22,7 +22,6 @@ interface SaveDataResult {
 
 const bnState = useBNStateStore()
 const aboutDialog = inject('aboutDialog', ref<Dialog | null>(null))
-const JSONEditorDialog = inject('JSONEditorDialog', ref<Dialog | null>(null))
 const fileOpen = ref<HTMLInputElement | null>(null)
 const openAbout = () => {
   if (!aboutDialog.value) {
@@ -135,7 +134,6 @@ const changeWorkName = () => {
         <mdui-menu-item>
           高级
           <mdui-menu-item slot="submenu" disabled>修改编辑器UI类型</mdui-menu-item>
-          <mdui-menu-item slot="submenu" @click="JSONEditorDialog!.open = true">修改作品JSON</mdui-menu-item>
         </mdui-menu-item>
       </mdui-menu>
     </mdui-dropdown>

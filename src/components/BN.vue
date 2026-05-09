@@ -3,10 +3,12 @@ import { ref, onBeforeUnmount, watchEffect } from 'vue'
 import { snackbar } from "mdui/functions/snackbar.js";
 import { getBridgeInstance, clearBridgeInstance } from '@/utils/bridgeInstance'
 import { useBNStateStore } from "@/stores/bnState";
+import { usePagesStore } from '@/stores/pages';
 
 // 组件状态
 
 const bnState = useBNStateStore()
+const pages = usePagesStore()
 
 const iframeRef = ref<any>(null)
 
@@ -30,24 +32,25 @@ onBeforeUnmount(() => {
 })
 
 watchEffect(() => {
-  const { isActorPage, isPlay } = bnState
+  const { isPlay } = bnState
+  const currentName = pages.currentName
   const workName = bnState.bcmJson.project_name
   const bridgeInstance: any = getBridgeInstance()
   if (!bridgeInstance) {
     return
   }
   document.title = `BetterNemo-Online : ${workName}`
-  bridgeInstance.sendNativeMessage('SET_THEATRE_VISIBLE', isActorPage)
+  bridgeInstance.sendNativeMessage('SET_THEATRE_VISIBLE', currentName == 'actor')
   bridgeInstance.sendNativeMessage('SET_RUN_STATE', isPlay)
   const iframeWin: any = bnState.iframeRef?.contentWindow;
-  if (iframeWin && isActorPage) {
+  if (iframeWin && (currentName == 'actor')) {
     const injectionDiv: HTMLDivElement = iframeWin.document.querySelector('.injectionDiv')
     const blocklyFlyout: HTMLDivElement = iframeWin.document.querySelector('.blocklyFlyout')
     if (injectionDiv) {
       injectionDiv.style.setProperty('width', 'calc(100% - 450px)', 'important')
       blocklyFlyout.style.setProperty('left', '-450px')
     }
-  } else if (!isActorPage) {
+  } else if (!(currentName == 'actor')) {
     const injectionDiv: HTMLDivElement = iframeWin.document.querySelector('.injectionDiv')
     const blocklyFlyout: HTMLDivElement = iframeWin.document.querySelector('.blocklyFlyout')
     if (injectionDiv) {

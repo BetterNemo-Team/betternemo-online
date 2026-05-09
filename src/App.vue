@@ -4,8 +4,6 @@ import type { Dialog } from 'mdui/components/dialog.js';
 import { useBNStateStore } from "@/stores/bnState";
 
 import AppBarMenu from "./components/AppBarMenu.vue";
-import MonacoEditor from "./components/MonacoEditor.vue";
-
 //import { useBNStateStore } from "@/stores/bnState";
 //const bnState = useBNStateStore()
 
@@ -62,13 +60,6 @@ document.title = `BetterNemo-Online : ${bnState.bcmJson.project_name}`
     </span>
     <mdui-button slot="action" @click="closeAbout()">确定</mdui-button>
   </mdui-dialog>
-  <!--
-  MDUI的弹窗组件,我草拟妈!
-  <mdui-dialog :open="test">
-    <MonacoEditor />
-    <mdui-button slot="action">确定</mdui-button>
-  </mdui-dialog>
-  -->
 </template>
 
 <style scoped>

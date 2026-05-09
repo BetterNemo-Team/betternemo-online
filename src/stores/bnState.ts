@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { getBridgeInstance, setBridgeInstance, clearBridgeInstance } from '@/utils/bridgeInstance'
 import { BNWorkspaceBridge } from '@/utils/bnWorkspaceBridge'
@@ -6,7 +6,6 @@ import { snackbar } from 'mdui/functions/snackbar.js'
 
 export const useBNStateStore = defineStore('bnState', () => {
   const isPlay = ref(false)
-  const isActorPage = ref(false)
   const defaultBCMJson = ref({
     actors: {
       actors_dict: {
@@ -604,7 +603,7 @@ export const useBNStateStore = defineStore('bnState', () => {
       },
     },
   })
-  const bcmJson = ref(defaultBCMJson.value)
+  const bcmJson = reactive(defaultBCMJson.value)
   const currentActor = ref('')
   const actorList = ref<any>([])
   const iframeRef = ref<HTMLIFrameElement | null>(null)
@@ -649,10 +648,10 @@ export const useBNStateStore = defineStore('bnState', () => {
 
       actorList.value = []
       // 解析bcmJson
-      Object.entries(bcmJson.value.actors.actors_dict).forEach(([_, value]) => {
+      Object.entries(bcmJson.actors.actors_dict).forEach(([_, value]) => {
         actorList.value.push(value)
       })
-      currentActor.value = bcmJson.value.actors.current_actor
+      currentActor.value = bcmJson.actors.current_actor
 
       // 初始化数据
       console.log('BN iframe 加载完成')
@@ -677,7 +676,6 @@ export const useBNStateStore = defineStore('bnState', () => {
     newWork,
     iframeRef,
     isPlay,
-    isActorPage,
     bcmJson,
     defaultBCMJson,
     goWork,
