@@ -43,7 +43,6 @@ const playWork = () => {
     </mdui-dropdown>
     <mdui-navigation-rail-item icon="code" value="jsonEditor"
       @click="pages.changePage('jsonEditor')"></mdui-navigation-rail-item>
-    <mdui-navigation-rail-item icon="code" value="code" @click="pages.changePage('code')"></mdui-navigation-rail-item>
     <mdui-navigation-rail-item icon="people" value="actor"
       @click="pages.changePage('actor')"></mdui-navigation-rail-item>
     <mdui-button-icon :icon="!bnState.isPlay ? 'play_arrow' : 'pause'" slot="bottom" variant="filled"

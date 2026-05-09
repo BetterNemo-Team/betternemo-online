@@ -1,0 +1,26 @@
+#theatre_container {
+  left: 0px !important;
+  height: 100% !important;
+  aspect-ratio: 281/450;
+  width: auto !important;
+}
+
+.injectionDiv {
+  width: 100% !important;
+  position: static !important;
+}
+
+#theatre {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+#theatre canvas {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.ask_dialog {
+  height: 100% !important;
+  width: 100% !important;
+}

@@ -656,7 +656,6 @@ export const useBNStateStore = defineStore('bnState', () => {
       // 初始化数据
       console.log('BN iframe 加载完成')
       bridgeInstance.initWebviewData()
-      bridgeInstance.sendNativeMessage('SET_THEATRE_VISIBLE', false)
       const pureBcmJson = JSON.parse(JSON.stringify(workJson))
       bridgeInstance.sendBridgeMessage('_dsaf.postMessageAsyn', ['LOAD_BCM', pureBcmJson])
     } catch (error) {
