@@ -3,9 +3,25 @@ import { defineStore } from 'pinia'
 import { getBridgeInstance, setBridgeInstance, clearBridgeInstance } from '@/utils/bridgeInstance'
 import { BNWorkspaceBridge } from '@/utils/bnWorkspaceBridge'
 import { snackbar } from 'mdui/functions/snackbar.js'
+import { useAuthStore } from './auth'
+
+interface SaveDataResult {
+  xml: Record<string, any>
+  block_count: number
+  block_count_visible_only: number
+  variable_dict: Record<string, any>
+  broadcast_dict: Record<string, any>
+  split_options: Record<string, any>
+  procedure_dict: Record<string, any>
+  toolbox: {
+    devices: any[]
+  }
+}
 
 export const useBNStateStore = defineStore('bnState', () => {
+  const authStore = useAuthStore()
   const isPlay = ref(false)
+  const isPad = ref(true)
   const defaultBCMJson = ref({
     actors: {
       actors_dict: {
@@ -607,7 +623,7 @@ export const useBNStateStore = defineStore('bnState', () => {
   const currentActor = ref('')
   const actorList = ref<any>([])
   const iframeRef = ref<HTMLIFrameElement | null>(null)
-  function goWork(workJson: any, reload?: boolean) {
+  async function goWork(workJson: any, reload?: boolean) {
     try {
       if (!iframeRef.value || !iframeRef.value.contentWindow) {
         return
@@ -655,7 +671,17 @@ export const useBNStateStore = defineStore('bnState', () => {
 
       // 初始化数据
       console.log('BN iframe 加载完成')
-      bridgeInstance.initWebviewData()
+
+      // 获取用户信息
+      await authStore.getUserData()
+      bridgeInstance.initWebviewData(
+        String(authStore.userData.userInfo.user.id),
+        '0',
+        authStore.userData.userInfo.user.nickname,
+        isPad.value,
+        authStore.userData.userInfo.user.avatar,
+      )
+
       const pureBcmJson = JSON.parse(JSON.stringify(workJson))
       bridgeInstance.sendBridgeMessage('_dsaf.postMessageAsyn', ['LOAD_BCM', pureBcmJson])
     } catch (error) {
@@ -671,6 +697,54 @@ export const useBNStateStore = defineStore('bnState', () => {
     }
     goWork(defaultBCMJson.value)
   }
+  async function syncWork() {
+    if (!iframeRef.value) {
+      return
+    }
+    const iframeWin: any = iframeRef.value.contentWindow
+    if (!iframeWin || !iframeWin._dsaf) {
+      console.error('iframe未加载完成或不同域')
+      return
+    }
+    let blocksInfo = {}
+    let workResult: SaveDataResult = {
+      xml: { '': '' },
+      block_count: 0,
+      block_count_visible_only: 0,
+      variable_dict: {},
+      broadcast_dict: {},
+      split_options: {},
+      procedure_dict: {},
+      toolbox: {
+        devices: [],
+      },
+    }
+    const result: SaveDataResult = await new Promise((resolve) => {
+      iframeWin._dsaf.postMessageAsyn('REQUEST_ALL_SAVE_DATA', {}, resolve)
+    })
+
+    workResult = result
+    blocksInfo = result.xml
+    const actors_dict = bcmJson.actors.actors_dict
+    const scenes_dict = bcmJson.scenes.scenes_dict
+    for (const blockName of Object.keys(blocksInfo)) {
+      if (Object.keys(actors_dict).includes(blockName)) {
+        actors_dict[blockName as keyof typeof actors_dict].blocksXML =
+          blocksInfo[blockName as keyof typeof blocksInfo]
+      } else if (Object.keys(scenes_dict).includes(blockName)) {
+        scenes_dict[blockName as keyof typeof scenes_dict].blocksXML =
+          blocksInfo[blockName as keyof typeof blocksInfo]
+      }
+    }
+    console.log(workResult)
+    bcmJson.block_count.all_block_count = workResult.block_count
+    bcmJson.block_count.visible_block_count = workResult.block_count_visible_only
+    bcmJson.toolbox = workResult.toolbox
+    bcmJson.variable.variable_dict = workResult.variable_dict as any
+    bcmJson.broadcast.broadcast_dict = workResult.broadcast_dict as any
+    bcmJson.procedures.procedure_dict = workResult.procedure_dict as any
+    bcmJson.split_options.options_dict = workResult.split_options as any
+  }
   return {
     newWork,
     iframeRef,
@@ -680,5 +754,7 @@ export const useBNStateStore = defineStore('bnState', () => {
     goWork,
     currentActor,
     actorList,
+    isPad,
+    syncWork,
   }
 })

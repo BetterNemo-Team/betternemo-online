@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref, provide, watchEffect } from "vue";
+import { ref, provide, watchEffect, onMounted } from "vue";
 import type { Dialog } from 'mdui/components/dialog.js';
 import { useBNStateStore } from "@/stores/bnState";
 
 import AppBarMenu from "./components/AppBarMenu.vue";
+import { useAuthStore } from "./stores/auth";
 //import { useBNStateStore } from "@/stores/bnState";
 //const bnState = useBNStateStore()
 
 const bnState = useBNStateStore()
+const authStore = useAuthStore()
 const aboutDialog = ref<Dialog | null>(null)
-const JSONEditorDialog = ref<Dialog | null>(null)
+const loginDialog = ref<Dialog | null>(null)
 const showOperate = ref(window.localStorage.getItem('showOperate') == 'true')
 const isChangeWorkName = ref(false)
 
@@ -24,9 +26,29 @@ watchEffect(() => {
   window.localStorage.setItem("showOperate", String(showOperate.value))
 })
 
-provide('aboutDialog', aboutDialog)
-provide('JSONEditorDialog', JSONEditorDialog)
 document.title = `BetterNemo-Online : ${bnState.bcmJson.project_name}`
+
+const loginCodemao = async (e: SubmitEvent) => {
+  e.preventDefault();
+  const form = e.target;
+  if (!form) {
+    return
+  }
+  const formValue = new FormData(form as HTMLFormElement);
+  authStore.loginUser(String(formValue.get('identity')), String(formValue.get('password')))
+}
+
+onMounted(() => {
+  if (!loginDialog.value) {
+    return
+  }
+  if (!localStorage.getItem('token') || !localStorage.getItem('userId')) {
+    loginDialog.value.open = true
+  }
+})
+
+provide('aboutDialog', aboutDialog)
+provide('loginDialog', loginDialog)
 </script>
 
 <template>
@@ -59,6 +81,15 @@ document.title = `BetterNemo-Online : ${bnState.bcmJson.project_name}`
       产品任何疑惑及问题其最终解释权归BetterNemo团队所有
     </span>
     <mdui-button slot="action" @click="closeAbout()">确定</mdui-button>
+  </mdui-dialog>
+  <mdui-dialog class="login-dialog" ref="loginDialog" headline="登录Nemo小宇宙">
+    <form @submit="loginCodemao" id="loginDialogForm">
+      <mdui-text-field label="账号" name="identity" form="loginDialogForm" required></mdui-text-field>
+      <mdui-text-field label="密码" toggle-password name="password" type="password" form="loginDialogForm"
+        required></mdui-text-field>
+    </form>
+    <mdui-button slot="action" @click="loginDialog!.open = false" variant="text">取消</mdui-button>
+    <mdui-button slot="action" type="submit" form="loginDialogForm">确定</mdui-button>
   </mdui-dialog>
 </template>
 

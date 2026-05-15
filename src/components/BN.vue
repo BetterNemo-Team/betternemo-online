@@ -9,6 +9,7 @@ import { usePagesStore } from '@/stores/pages';
 
 const bnState = useBNStateStore()
 const pages = usePagesStore()
+const isLoaded = ref(false)
 
 const iframeRef = ref<any>(null)
 
@@ -18,7 +19,8 @@ function onIframeLoad() {
   // 同步真实DOM到Store
   bnState.iframeRef = iframeDom
   // 初始化默认作品
-  bnState.newWork()
+  if (!isLoaded.value) { bnState.newWork() }
+  isLoaded.value = true
 }
 
 function onIframeError() {

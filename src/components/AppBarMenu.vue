@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject } from "vue";
+import { ref, inject, watch } from "vue";
 import type { Dialog } from 'mdui/components/dialog.js';
 
 import { useBNStateStore } from "@/stores/bnState";
@@ -7,22 +7,10 @@ import { downloadString } from "@/utils/blobTools";
 
 import { prompt as mdPrompt } from 'mdui/functions/prompt.js';
 
-interface SaveDataResult {
-  xml: Record<string, any>;
-  block_count: number;
-  block_count_visible_only: number;
-  variable_dict: Record<string, any>;
-  broadcast_dict: Record<string, any>;
-  split_options: Record<string, any>;
-  procedure_dict: Record<string, any>;
-  toolbox: {
-    devices: any[];
-  };
-
-}
 
 const bnState = useBNStateStore()
 const aboutDialog = inject('aboutDialog', ref<Dialog | null>(null))
+const loginDialog = inject('loginDialog', ref<Dialog | null>(null))
 const fileOpen = ref<HTMLInputElement | null>(null)
 const openAbout = () => {
   if (!aboutDialog.value) {
@@ -63,44 +51,7 @@ const openFile = () => {
 
 
 const saveFile = async () => {
-  const iframeWin: any = bnState.iframeRef?.contentWindow;
-  if (!iframeWin || !iframeWin._dsaf) {
-    console.error("iframe未加载完成或不同域");
-    return;
-  }
-  let blocksInfo = {}
-  let workResult: SaveDataResult = {
-    "xml": { "": '' }, "block_count": 0, 'block_count_visible_only': 0, 'variable_dict': {}, 'broadcast_dict': {}, 'split_options': {}, 'procedure_dict': {}, "toolbox": {
-      "devices": []
-    }
-  }
-  const result: SaveDataResult = await new Promise((resolve) => {
-    iframeWin._dsaf.postMessageAsyn(
-      "REQUEST_ALL_SAVE_DATA",
-      {},
-      resolve
-    );
-  });
-
-  workResult = result;
-  blocksInfo = result.xml;
-  const actors_dict = bnState.bcmJson.actors.actors_dict
-  const scenes_dict = bnState.bcmJson.scenes.scenes_dict
-  for (const blockName of Object.keys(blocksInfo)) {
-    if (Object.keys(actors_dict).includes(blockName)) {
-      actors_dict[blockName as keyof typeof actors_dict].blocksXML = blocksInfo[blockName as keyof typeof blocksInfo]
-    } else if (Object.keys(scenes_dict).includes(blockName)) {
-      scenes_dict[blockName as keyof typeof scenes_dict].blocksXML = blocksInfo[blockName as keyof typeof blocksInfo]
-    }
-  }
-  console.log(workResult)
-  bnState.bcmJson.block_count.all_block_count = workResult.block_count
-  bnState.bcmJson.block_count.visible_block_count = workResult.block_count_visible_only
-  bnState.bcmJson.toolbox = workResult.toolbox
-  bnState.bcmJson.variable.variable_dict = workResult.variable_dict as any
-  bnState.bcmJson.broadcast.broadcast_dict = workResult.broadcast_dict as any
-  bnState.bcmJson.procedures.procedure_dict = workResult.procedure_dict as any
-  bnState.bcmJson.split_options.options_dict = workResult.split_options as any
+  await bnState.syncWork()
   downloadString(JSON.stringify(bnState.bcmJson, null, 4), `${bnState.bcmJson.project_name}.json`)
 }
 
@@ -115,6 +66,13 @@ const changeWorkName = () => {
     onConfirm: (value) => { bnState.bcmJson.project_name = String(value) },
   });
 }
+
+watch(
+  () => bnState.isPad,
+  () => {
+    bnState.goWork(bnState.bcmJson, true)
+  }
+);
 </script>
 <template>
   <div class="top-app-bar-menu">
@@ -134,14 +92,14 @@ const changeWorkName = () => {
         <mdui-menu-item @click="changeWorkName()">重命名</mdui-menu-item>
         <mdui-menu-item>
           高级
-          <mdui-menu-item slot="submenu" disabled>修改编辑器UI类型</mdui-menu-item>
+          <mdui-menu-item slot="submenu" @click="bnState.isPad = !bnState.isPad">修改编辑器UI类型</mdui-menu-item>
         </mdui-menu-item>
       </mdui-menu>
     </mdui-dropdown>
     <mdui-dropdown>
-      <mdui-button variant="outlined" slot="trigger" class="pc-menu-button" disabled>账号</mdui-button>
+      <mdui-button variant="outlined" slot="trigger" class="pc-menu-button">账号</mdui-button>
       <mdui-menu>
-        <mdui-menu-item>登录</mdui-menu-item>
+        <mdui-menu-item @click="loginDialog!.open = true">登录</mdui-menu-item>
       </mdui-menu>
     </mdui-dropdown>
     <mdui-dropdown>
