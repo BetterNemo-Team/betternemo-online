@@ -31,6 +31,7 @@ document.title = `BetterNemo-Online : ${bnState.bcmJson.project_name}`
 const loginCodemao = async (e: SubmitEvent) => {
   e.preventDefault();
   const form = e.target;
+  authStore.changeShowLogin(false)
   if (!form) {
     return
   }
@@ -46,8 +47,15 @@ onMounted(() => {
     return
   }
   if (!localStorage.getItem('token') || !localStorage.getItem('userId')) {
-    loginDialog.value.open = true
+    authStore.changeShowLogin(true)
   }
+})
+
+watchEffect(() => {
+  if (!loginDialog.value) {
+    return
+  }
+  loginDialog.value.open = authStore.showLogin
 })
 
 provide('aboutDialog', aboutDialog)
@@ -93,7 +101,7 @@ provide('loginDialog', loginDialog)
       <mdui-text-field label="密码" toggle-password name="password" type="password" form="loginDialogForm"
         required></mdui-text-field>
     </form>
-    <mdui-button slot="action" @click="loginDialog!.open = false" variant="text">取消</mdui-button>
+    <mdui-button slot="action" @click="authStore.changeShowLogin(false)" variant="text">取消</mdui-button>
     <mdui-button slot="action" type="submit" form="loginDialogForm">确定</mdui-button>
   </mdui-dialog>
 </template>

@@ -4,6 +4,7 @@ import { useBNStateStore } from './bnState'
 
 export const useAuthStore = defineStore('auth', () => {
   const bnState = useBNStateStore()
+  const showLogin = ref(false)
   const isLogin = ref(false)
   const userData = ref({
     userInfo: {
@@ -62,7 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', data.auth.token)
       localStorage.setItem('userId', data.user_info.id)
       console.log('成功:', data)
-      bnState.newWork()
+      bnState.goWork(bnState.bcmJson)
       isLogin.value = true
       return { success: true }
     } catch (err) {
@@ -70,5 +71,8 @@ export const useAuthStore = defineStore('auth', () => {
       return { success: false }
     }
   }
-  return { userData, getUserData, loginUser }
+  function changeShowLogin(value: boolean) {
+    showLogin.value = value
+  }
+  return { userData, getUserData, loginUser, showLogin, changeShowLogin }
 })

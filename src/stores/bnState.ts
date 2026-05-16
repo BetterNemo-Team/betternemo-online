@@ -663,6 +663,8 @@ export const useBNStateStore = defineStore('bnState', () => {
               message: data_object?.payload?.text,
               closeable: true,
             })
+          case 'USER_LOGIN':
+            authStore.changeShowLogin(true)
         }
       }
 
