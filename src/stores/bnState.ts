@@ -623,8 +623,11 @@ export const useBNStateStore = defineStore('bnState', () => {
   const currentActor = ref('')
   const actorList = ref<any>([])
   const iframeRef = ref<HTMLIFrameElement | null>(null)
+  const isLoading = ref(true)
+  const workLoadingProgress = ref(0)
   async function goWork(workJson: any, reload?: boolean) {
     try {
+      isLoading.value = true
       if (!iframeRef.value || !iframeRef.value.contentWindow) {
         return
       }
@@ -639,6 +642,7 @@ export const useBNStateStore = defineStore('bnState', () => {
       }
       // 初始化bridge实例
       bridgeInstance.registerListener()
+      workLoadingProgress.value = 30
       bridgeInstance.onMessage = (message: any) => {
         if (!message?.args) {
           return
@@ -671,6 +675,7 @@ export const useBNStateStore = defineStore('bnState', () => {
 
       // 初始化数据
       console.log('BN iframe 加载完成')
+      workLoadingProgress.value = 60
 
       // 获取用户信息
       await authStore.getUserData()
@@ -681,9 +686,13 @@ export const useBNStateStore = defineStore('bnState', () => {
         isPad.value,
         authStore.userData.userInfo.user.avatar,
       )
-
+      workLoadingProgress.value = 90
       const pureBcmJson = JSON.parse(JSON.stringify(workJson))
       bridgeInstance.sendBridgeMessage('_dsaf.postMessageAsyn', ['LOAD_BCM', pureBcmJson])
+      workLoadingProgress.value = 100
+      setTimeout(() => {
+        isLoading.value = false
+      }, 500)
     } catch (error) {
       console.error('加载iframe失败:', error)
     }
@@ -756,5 +765,7 @@ export const useBNStateStore = defineStore('bnState', () => {
     actorList,
     isPad,
     syncWork,
+    workLoadingProgress,
+    isLoading,
   }
 })

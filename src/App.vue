@@ -35,7 +35,10 @@ const loginCodemao = async (e: SubmitEvent) => {
     return
   }
   const formValue = new FormData(form as HTMLFormElement);
-  authStore.loginUser(String(formValue.get('identity')), String(formValue.get('password')))
+  const login = authStore.loginUser(String(formValue.get('identity')), String(formValue.get('password')))
+  if ((await login).success && loginDialog.value) {
+    loginDialog.value.open = false
+  }
 }
 
 onMounted(() => {
@@ -52,6 +55,8 @@ provide('loginDialog', loginDialog)
 </script>
 
 <template>
+  <mdui-card class="loading-mask" v-if="bnState.isLoading"><mdui-circular-progress
+      :value="bnState.workLoadingProgress / 100"></mdui-circular-progress></mdui-card>
   <mdui-layout>
     <mdui-top-app-bar class="top-app-bar" scroll-behavior="elevate" scroll-threshold="0">
       <mdui-button-icon icon="web"></mdui-button-icon>
@@ -94,6 +99,20 @@ provide('loginDialog', loginDialog)
 </template>
 
 <style scoped>
+.loading-mask {
+  display: flex;
+  position: fixed;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  border-radius: 0;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+}
+
 .top-app-bar-title {
   display: flex;
   align-items: center;

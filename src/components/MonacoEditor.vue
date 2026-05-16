@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { CodeEditor } from 'monaco-editor-vue3';
-import zhHans from '../assets/monacoEditor/langs/main.i18n.json'
 import { ref } from 'vue';
 const code = defineModel()
 const editorRef = ref(null)
