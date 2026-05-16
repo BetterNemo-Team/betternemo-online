@@ -1,8 +1,5 @@
 #theatre_container {
-  left: 0px !important;
-  height: 100% !important;
-  aspect-ratio: 281/450;
-  width: auto !important;
+  display: none !important;
 }
 
 .injectionDiv {
@@ -26,5 +23,41 @@
 }
 
 .full_screen_btn {
+  display: none;
+}
+
+.DXTF0X1TguMk3IISsnBre {
+  left: 0 !important;
+  width: 100vw !important;
+}
+
+#react_root:has(.DXTF0X1TguMk3IISsnBre._2exagFlfCycMIMe1iH2OTO) #theatre_container {
+  display: flex !important;
+  left: 0px !important;
+  height: 100% !important;
+  aspect-ratio: 281 / 450;
+  width: auto !important;
+}
+
+.fcm7GAGVExuATRwiTHK-u span {
+  visibility: hidden;
+}
+
+.fcm7GAGVExuATRwiTHK-u span::before {
+  content: '暂不支持连接设备';
+  visibility: visible;
+  font-size: 14px;
+  font-weight: 400;
+  color: #dbd2e8;
+  line-height: 20px;
+  display: block;
+  margin: auto;
+}
+
+._2r5ZXNCJ1F8bpwvTq7-8JS {
+  display: none;
+}
+
+._2ghpy004wMsymhJoX61aK3 {
   display: none;
 }
