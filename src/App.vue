@@ -107,9 +107,15 @@ provide('loginDialog', loginDialog)
     <RouterView />
   </mdui-layout>
   <mdui-dialog class="about-dialog" ref="aboutDialog" close-on-overlay-click>
-    <span class="about-dialog-description">BetterNemo-Online<br>
-      Powered By BetterNemo开发组<br>
-      产品任何疑惑及问题其最终解释权归BetterNemo团队所有
+    <span class="about-dialog-description">
+      Q1: 为什么不支持云端作品?<br>
+      A1: 联系技术喵或班主任帮你解决吧~<br>
+      Q2: 为什么不支持查看角色?<br>
+      A2: 联系技术喵或班主任帮你解决吧~<br>
+      Q3: 为什么不支持新建角色?<br>
+      A4: 联系技术喵或班主任帮你解决吧~<br>
+      Q5: 为什么账号系统这么难用?<br>
+      A6: 联系技术喵或班主任帮你解决吧~<br>
     </span>
     <mdui-button slot="action" @click="closeAbout()">确定</mdui-button>
   </mdui-dialog>

@@ -6,12 +6,17 @@ import { useBNStateStore } from "@/stores/bnState";
 import { downloadString } from "@/utils/blobTools";
 
 import { prompt as mdPrompt } from 'mdui/functions/prompt.js';
+import { useAuthStore } from "@/stores/auth";
 
-
+const authStore = useAuthStore()
 const bnState = useBNStateStore()
 const aboutDialog = inject('aboutDialog', ref<Dialog | null>(null))
 const loginDialog = inject('loginDialog', ref<Dialog | null>(null))
 const fileOpen = ref<HTMLInputElement | null>(null)
+
+const token = localStorage.getItem('token')
+const userId = localStorage.getItem('userId')
+
 const openAbout = () => {
   if (!aboutDialog.value) {
     return
@@ -116,13 +121,20 @@ watch(
     <mdui-dropdown>
       <mdui-button variant="outlined" slot="trigger" class="pc-menu-button">账号</mdui-button>
       <mdui-menu>
-        <mdui-menu-item @click="loginDialog!.open = true">登录</mdui-menu-item>
+        <mdui-menu-item @click="loginDialog!.open = true" v-if="!token || !userId">登录</mdui-menu-item>
+        <mdui-menu-item v-else>
+          用户信息
+          <mdui-menu-item slot="submenu">昵称: {{ authStore.userData.userInfo.user.nickname }}</mdui-menu-item>
+          <mdui-menu-item slot="submenu">性别: {{ authStore.userData.userInfo.user.sex == 1 ? '男' : '女'
+            }}</mdui-menu-item>
+          <mdui-menu-item slot="submenu">UID: {{ authStore.userData.userInfo.user.id }}</mdui-menu-item>
+        </mdui-menu-item>
       </mdui-menu>
     </mdui-dropdown>
     <mdui-dropdown>
       <mdui-button variant="outlined" slot="trigger" class="pc-menu-button">帮助</mdui-button>
       <mdui-menu>
-        <mdui-menu-item @click="openAbout()">关于 BetterNemo-Online</mdui-menu-item>
+        <mdui-menu-item @click="openAbout()">Q&A</mdui-menu-item>
       </mdui-menu>
     </mdui-dropdown>
   </div>
