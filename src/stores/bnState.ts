@@ -630,6 +630,7 @@ export const useBNStateStore = defineStore('bnState', () => {
   async function goWork(workJson: any, reload?: boolean, newWorkID?: number) {
     try {
       isLoading.value = true
+      workLoadingProgress.value = 0
       if (!domStore.iframeRef || !domStore.iframeRef.contentWindow) {
         return
       }
@@ -639,6 +640,7 @@ export const useBNStateStore = defineStore('bnState', () => {
       if (newWorkID) {
         workId.value = newWorkID
       }
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       clearBridgeInstance()
       setBridgeInstance(new BNWorkspaceBridge({ value: domStore.iframeRef }))
       const bridgeInstance = getBridgeInstance()
@@ -683,7 +685,9 @@ export const useBNStateStore = defineStore('bnState', () => {
       workLoadingProgress.value = 60
 
       // 获取用户信息
-      await authStore.getUserData()
+      if (!authStore.notLogin) {
+        await authStore.getUserData()
+      }
       // 设置用户数据
       bridgeInstance.initWebviewData(
         String(authStore.userData.userInfo.user.id),

@@ -6,6 +6,7 @@ export const useAuthStore = defineStore('auth', () => {
   const bnState = useBNStateStore()
   const showLogin = ref(false)
   const isLogin = ref(false)
+  const notLogin = ref(false)
   const userData = ref({
     userInfo: {
       user: {
@@ -21,6 +22,9 @@ export const useAuthStore = defineStore('auth', () => {
     },
   })
   async function getUserData() {
+    if (notLogin.value) {
+      return { success: true }
+    }
     try {
       const res = await fetch(
         `https://codemao.xingtaishijiaoxiqu.workers.dev/api/codemao/api/user/info/detail/${localStorage.getItem('userId') ?? ''}`,
@@ -63,8 +67,8 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', data.auth.token)
       localStorage.setItem('userId', data.user_info.id)
       console.log('成功:', data)
-      bnState.goWork(bnState.bcmJson)
       isLogin.value = true
+      bnState.goWork(bnState.bcmJson)
       return { success: true }
     } catch (err) {
       console.error('失败:', err)
@@ -74,5 +78,5 @@ export const useAuthStore = defineStore('auth', () => {
   function changeShowLogin(value: boolean) {
     showLogin.value = value
   }
-  return { userData, getUserData, loginUser, showLogin, changeShowLogin }
+  return { userData, getUserData, loginUser, showLogin, changeShowLogin, notLogin }
 })

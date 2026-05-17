@@ -88,6 +88,12 @@ const changeWorkID = () => {
   });
 }
 
+const notLogin = async () => {
+  authStore.notLogin = !authStore.notLogin
+  await bnState.goWork(bnState.bcmJson, true)
+}
+
+
 watch(
   () => bnState.isPad,
   () => {
@@ -121,12 +127,14 @@ watch(
     <mdui-dropdown>
       <mdui-button variant="outlined" slot="trigger" class="pc-menu-button">账号</mdui-button>
       <mdui-menu>
+        <mdui-menu-item @click="notLogin()">{{ authStore.notLogin ? '禁用' : '启用'
+          }}离线模式</mdui-menu-item>
         <mdui-menu-item @click="loginDialog!.open = true" v-if="!token || !userId">登录</mdui-menu-item>
         <mdui-menu-item v-else>
           用户信息
           <mdui-menu-item slot="submenu">昵称: {{ authStore.userData.userInfo.user.nickname }}</mdui-menu-item>
           <mdui-menu-item slot="submenu">性别: {{ authStore.userData.userInfo.user.sex == 1 ? '男' : '女'
-            }}</mdui-menu-item>
+          }}</mdui-menu-item>
           <mdui-menu-item slot="submenu">UID: {{ authStore.userData.userInfo.user.id }}</mdui-menu-item>
         </mdui-menu-item>
       </mdui-menu>

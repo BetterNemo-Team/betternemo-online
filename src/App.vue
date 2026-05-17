@@ -44,6 +44,7 @@ const loginCodemao = async (e: SubmitEvent) => {
   })
   const login = await authStore.loginUser(String(formValue.get('identity')), String(formValue.get('password')))
   if (login.success && loginDialog.value) {
+    authStore.notLogin = false
     authStore.changeShowLogin(false)
     const getUser = await authStore.getUserData()
     if (getUser.success && vipUserList.includes(String(authStore.userData.userInfo.user.id))) {
@@ -81,8 +82,9 @@ provide('loginDialog', loginDialog)
 </script>
 
 <template>
-  <mdui-card class="loading-mask" v-if="bnState.isLoading"><mdui-circular-progress
-      :value="bnState.workLoadingProgress / 100"></mdui-circular-progress></mdui-card>
+  <mdui-card class="loading-mask" v-if="bnState.isLoading">
+    <mdui-circular-progress :value="bnState.workLoadingProgress / 100"></mdui-circular-progress>
+  </mdui-card>
   <mdui-layout>
     <mdui-top-app-bar class="top-app-bar" scroll-behavior="elevate" scroll-threshold="0">
       <mdui-button-icon icon="web"></mdui-button-icon>
@@ -143,6 +145,7 @@ provide('loginDialog', loginDialog)
   width: 100%;
   left: 0;
   top: 0;
+  gap: 36px;
 }
 
 .top-app-bar-title {
