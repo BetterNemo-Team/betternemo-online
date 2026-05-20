@@ -20,7 +20,7 @@ const workExtensionsDialog = ref<Dialog | null>(null)
 const fileOpen = ref<HTMLInputElement | null>(null)
 const zipOpen = ref<HTMLInputElement | null>(null)
 const uiColor = ref('#2D0078')
-const needLoadExtensions = ref<{ name: string, workVersion: string, version: (string | null), url: string, isInstall: boolean }[]>([])
+const needLoadExtensions = ref<{ name: string, workVersion: string, version: (string | null), url: string, goInstall: boolean }[]>([])
 
 const token = localStorage.getItem('token')
 const userId = localStorage.getItem('userId')
@@ -64,60 +64,68 @@ const openFile = () => {
       return
     }
     reader.readAsText(file);
+    fileOpen.value.value = ''
   } catch (e) {
-    console.log(e)
+    console.error(e)
   }
 }
 
 const openZip = async () => {
-  if (!zipOpen.value || !zipOpen.value.files || !workExtensionsDialog.value) {
-    return
-  }
-  const file = zipOpen.value.files[0]
-  if (!file) {
-    return
-  }
-  const zip = new JSZip()
-  const zipData = await zip.loadAsync(file)
+  try {
+    if (!zipOpen.value || !zipOpen.value.files || !workExtensionsDialog.value) {
+      return
+    }
+    const file = zipOpen.value.files[0]
+    if (!file) {
+      return
+    }
+    const zip = new JSZip()
+    const zipData = await zip.loadAsync(file)
 
-  // 处理文件路径
-  if (!zipData.files['index.userimg']) return;
-  const userimg = await zipData.files['index.userimg'].async('string');
-  const userimgObject = JSON.parse(userimg)
-  const userimgPureObject = userimgObject?.user_img_dict
-  if (!userimgPureObject) return;
-  const userimgPureBlobList: any = {}
-  for (const [fileName, zipEntry] of Object.entries(zipData.files)) {
-    // 只处理素材文件
-    if (zipEntry.dir) continue;
-    if (!(fileName.startsWith("material/")) && !(fileName.startsWith("record/"))) continue;
-    const blob = await zipEntry.async('blob');
-    const url = URL.createObjectURL(blob);
-    userimgPureBlobList[fileName] = url
+    // 处理文件路径
+    if (!zipData.files['index.userimg']) return;
+    const userimg = await zipData.files['index.userimg'].async('string');
+    const userimgObject = JSON.parse(userimg)
+    const userimgPureObject = userimgObject?.user_img_dict
+    if (!userimgPureObject) return;
+    const userimgPureBlobList: any = {}
+    for (const [fileName, zipEntry] of Object.entries(zipData.files)) {
+      // 只处理素材文件
+      if (zipEntry.dir) continue;
+      if (!(fileName.startsWith("material/")) && !(fileName.startsWith("record/"))) continue;
+      const blob = await zipEntry.async('blob');
+      const url = URL.createObjectURL(blob);
+      userimgPureBlobList[fileName] = url
+    }
+    if (!zipData.files['index.bcm']) return;
+    const work = await zipData.files['index.bcm'].async('string');
+    const workObject = JSON.parse(work)
+    for (const [styleId] of Object.entries(workObject?.styles?.styles_dict || {})) {
+      workObject.styles.styles_dict[styleId].path = userimgPureBlobList[workObject.styles.styles_dict[styleId].path]
+    }
+    // 作品扩展筛选
+    if (zipData.files['extensions.json']) {
+      const extensions = await zipData.files['extensions.json'].async('string')
+      const extensionsObject = JSON.parse(extensions)
+      bnState.workExtensions = extensionsObject?.extensions ?? []
+    };
+    // 这里应该写筛选逻辑,我懒了
+    for (const extension of bnState.workExtensions) {
+      needLoadExtensions.value.push({
+        name: extension?.name,
+        workVersion: extension?.version,
+        version: null,
+        url: extension?.url,
+        goInstall: false
+      })
+    }
+    workExtensionsDialog.value.open = true
+    bnState.bcmJson = JSON.parse(JSON.stringify(workObject))
+    zipOpen.value.value = ''
   }
-  if (!zipData.files['index.bcm']) return;
-  const work = await zipData.files['index.bcm'].async('string');
-  const workObject = JSON.parse(work)
-  for (const [styleId] of Object.entries(workObject?.styles?.styles_dict || {})) {
-    workObject.styles.styles_dict[styleId].path = userimgPureBlobList[workObject.styles.styles_dict[styleId].path]
+  catch (e) {
+    console.error(e)
   }
-  // 作品扩展筛选
-  if (zipData.files['extensions.json']) {
-    const extensions = await zipData.files['extensions.json'].async('string')
-    const extensionsObject = JSON.parse(extensions)
-    bnState.workExtensions = extensionsObject?.extensions ?? []
-  };
-  // 这里应该写筛选逻辑,我懒了
-  for (const extension of bnState.workExtensions) {
-    needLoadExtensions.value.push({
-      name: extension?.name,
-      workVersion: extension?.version,
-      version: null,
-      url: extension?.url,
-      isInstall: false
-    })
-  }
-  workExtensionsDialog.value.open = true
   // await bnState.goWork(JSON.parse(JSON.stringify(workObject)), true)
 }
 
@@ -166,10 +174,22 @@ const changeExtensionInstall = (index: number, event: any) => {
   if (selectTarget.value == '') {
     selectTarget.value = 'no-event'
   } else if (selectTarget.value == 'download') {
-    needLoadExtensions.value[index].isInstall = true
+    needLoadExtensions.value[index].goInstall = true
   } else {
-    needLoadExtensions.value[index].isInstall = false
+    needLoadExtensions.value[index].goInstall = false
   }
+}
+
+const openZipWorkAndExtensions = async () => {
+  if (!workExtensionsDialog.value) return;
+  await bnState.goWork(JSON.parse(JSON.stringify(bnState.bcmJson)), true)
+  console.log(needLoadExtensions.value)
+  for (const extension of needLoadExtensions.value) {
+    if (extension.goInstall && domStore.iframeRef?.contentWindow) {
+      (domStore.iframeRef.contentWindow as unknown as any).loadURLExtension(extension.url)
+    }
+  }
+  workExtensionsDialog.value.open = false
 }
 
 watch(
@@ -273,15 +293,15 @@ onMounted(() => {
               <th class="work-extensions-dialog-text">{{ extension.url }}</th>
               <th class="work-extensions-dialog-text">
                 <mdui-select variant="outlined" value="no-event" @change="changeExtensionInstall(index, $event)">
-                  <mdui-menu-item value="no-event" @click="extension.isInstall = false">使用本地版本/不加载扩展</mdui-menu-item>
-                  <mdui-menu-item value="download" disabled @click="extension.isInstall = true">下载扩展并加载</mdui-menu-item>
+                  <mdui-menu-item value="no-event" @click="extension.goInstall = false">使用本地版本/不加载扩展</mdui-menu-item>
+                  <mdui-menu-item value="download" @click="extension.goInstall = true">下载扩展并加载</mdui-menu-item>
                 </mdui-select>
               </th>
             </tr>
           </tbody>
         </table>
       </div>
-      <mdui-button slot="action">确定</mdui-button>
+      <mdui-button slot="action" @click="openZipWorkAndExtensions()">确定</mdui-button>
     </mdui-dialog>
   </Teleport>
 </template>

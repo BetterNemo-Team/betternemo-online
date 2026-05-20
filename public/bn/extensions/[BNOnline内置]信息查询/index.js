@@ -11,61 +11,7 @@ Extension.metaData = {
 (async (Extension) => {
   'use strict';
   window.bnOnline = true;
-  const BN = Extension.API;
-  const Block = BN.Block;
-  const Toolbox = BN.Toolbox;
-  await BN.waitBlocklyLoaded();
-
-  BN.regColor("RUNTIME_CONFIG_HUE", "#2D0078", "#2D0078");
-
-
-  let toolboxXML = [
-    Toolbox.title("BNOnline"),
-    Toolbox.button("device_info", " 设备信息 ", () => {
-      const userAgent = navigator.userAgent;
-      let webviewVersion = '未知';
-      const webviewMatch = userAgent.match(/Version\/(\d+\.\d+)/);
-      if (webviewMatch) webviewVersion = webviewMatch[1];
-      else if (userAgent.includes('Chrome/')) {
-        const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
-        if (chromeMatch) webviewVersion = chromeMatch[1];
-      }
-
-      const loaderVersion = window.BetterNemoVersion || '未知';
-      const screenInfo = `${screen.width}x${screen.height}`;
-      let os = '未知';
-      if (userAgent.includes('Android')) os = 'Android';
-      else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
-      else if (userAgent.includes('Windows')) os = 'Windows';
-      else if (userAgent.includes('Mac')) os = 'macOS';
-      else if (userAgent.includes('Linux')) os = 'Linux';
-
-      const infoText = `加载器版本：${loaderVersion}(BetterNemo-Online)\nWebView 版本：${webviewVersion}\n操作系统：${os}\n屏幕尺寸：${screenInfo}\nUser Agent：${userAgent}`;
-      alert(infoText);
-      BN.log('ConfigPanel', '已显示设备信息');
-    }, "procedure-add-param"),
-    Toolbox.button("About", " 关于 ", () => {
-      alert("BetterNemo-Online 辅助扩展")
-    }, "procedure-add-param"),
-    Toolbox.sep(20),
-  ];
-
-  toolboxXML.push(Toolbox.line("主题"));
-  let config = storage.get('theme_config');
-  for (const themeName of THEME_FILES) {
-    toolboxXML.push(Toolbox.button(`UseTheme${themeName}`, ` 使用主题 ${themeName} `, async () => {
-      Object.keys(config).forEach(key => {
-        config[key] = (key == themeName);
-      });
-      storage.set('theme_config', config);
-      reloadTheme();
-      BN.log('ConfigPanel', '已设置主题' + themeName);
-    }, "procedure-add-param"))
-  };
-
-  toolboxXML.push(Toolbox.line("扩展"));
-  toolboxXML.push(Toolbox.button(`UseExtension`, ` 从URL使用扩展 `, async () => {
-    let url = prompt("请输入URL:", "默认URL");
+  window.loadURLExtension = async (url) => {
     function getRandomStr(n = 6) {
       const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
       let str = '';
@@ -137,6 +83,63 @@ Extension.metaData = {
       reloadExtension();
       BetterNemo.log('扩展管理', '已重新加载扩展积木盒');
     }, 500);
+  }
+  const BN = Extension.API;
+  const Block = BN.Block;
+  const Toolbox = BN.Toolbox;
+  await BN.waitBlocklyLoaded();
+
+  BN.regColor("RUNTIME_CONFIG_HUE", "#2D0078", "#2D0078");
+
+
+  let toolboxXML = [
+    Toolbox.title("BNOnline"),
+    Toolbox.button("device_info", " 设备信息 ", () => {
+      const userAgent = navigator.userAgent;
+      let webviewVersion = '未知';
+      const webviewMatch = userAgent.match(/Version\/(\d+\.\d+)/);
+      if (webviewMatch) webviewVersion = webviewMatch[1];
+      else if (userAgent.includes('Chrome/')) {
+        const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
+        if (chromeMatch) webviewVersion = chromeMatch[1];
+      }
+
+      const loaderVersion = window.BetterNemoVersion || '未知';
+      const screenInfo = `${screen.width}x${screen.height}`;
+      let os = '未知';
+      if (userAgent.includes('Android')) os = 'Android';
+      else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
+      else if (userAgent.includes('Windows')) os = 'Windows';
+      else if (userAgent.includes('Mac')) os = 'macOS';
+      else if (userAgent.includes('Linux')) os = 'Linux';
+
+      const infoText = `加载器版本：${loaderVersion}(BetterNemo-Online)\nWebView 版本：${webviewVersion}\n操作系统：${os}\n屏幕尺寸：${screenInfo}\nUser Agent：${userAgent}`;
+      alert(infoText);
+      BN.log('ConfigPanel', '已显示设备信息');
+    }, "procedure-add-param"),
+    Toolbox.button("About", " 关于 ", () => {
+      alert("BetterNemo-Online 辅助扩展")
+    }, "procedure-add-param"),
+    Toolbox.sep(20),
+  ];
+
+  toolboxXML.push(Toolbox.line("主题"));
+  let config = storage.get('theme_config');
+  for (const themeName of THEME_FILES) {
+    toolboxXML.push(Toolbox.button(`UseTheme${themeName}`, ` 使用主题 ${themeName} `, async () => {
+      Object.keys(config).forEach(key => {
+        config[key] = (key == themeName);
+      });
+      storage.set('theme_config', config);
+      reloadTheme();
+      BN.log('ConfigPanel', '已设置主题' + themeName);
+    }, "procedure-add-param"))
+  };
+
+  toolboxXML.push(Toolbox.line("扩展"));
+  toolboxXML.push(Toolbox.button(`UseExtension`, ` 从URL使用扩展 `, async () => {
+    let url = prompt("请输入URL:", "默认URL");
+    window.loadURLExtension(url)
   }, "procedure-add-param"))
 
   toolboxXML.push(Toolbox.flyout_bottom());
