@@ -70,13 +70,6 @@ onMounted(() => {
   }
 })
 
-watchEffect(() => {
-  if (!loginDialog.value) {
-    return
-  }
-  loginDialog.value.open = authStore.showLogin
-})
-
 provide('aboutDialog', aboutDialog)
 provide('loginDialog', loginDialog)
 </script>
@@ -93,7 +86,7 @@ provide('loginDialog', loginDialog)
           <span>BetterNemo-Online :</span>
           <span v-if="!isChangeWorkName" @click="isChangeWorkName = true">{{ bnState?.bcmJson?.project_name }}</span>
           <mdui-text-field class="top-app-bar-work-name-field" v-else variant="outlined"
-            @change="bnState.bcmJson.project_name = $event.target.value; isChangeWorkName = false" :value="bnState?.bcmJson?.project_name ??
+            @change="bnState.bcmJson.project_name = $event.target.value" @blur="isChangeWorkName = false" :value="bnState?.bcmJson?.project_name ??
               '默认作品名'"></mdui-text-field>
           <AppBarMenu v-if="!showOperate" />
         </div>
@@ -121,7 +114,7 @@ provide('loginDialog', loginDialog)
     </span>
     <mdui-button slot="action" @click="closeAbout()">确定</mdui-button>
   </mdui-dialog>
-  <mdui-dialog class="login-dialog" ref="loginDialog" headline="登录Nemo小宇宙">
+  <mdui-dialog class="login-dialog" ref="loginDialog" headline="登录Nemo小宇宙" :open="authStore.showLogin">
     <form @submit="loginCodemao" id="loginDialogForm">
       <mdui-text-field label="账号" name="identity" form="loginDialogForm" required></mdui-text-field>
       <mdui-text-field label="密码" toggle-password name="password" type="password" form="loginDialogForm"

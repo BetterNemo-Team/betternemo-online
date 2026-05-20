@@ -627,25 +627,18 @@ export const useBNStateStore = defineStore('bnState', () => {
   const isLoading = ref(true)
   const workId = ref(0)
   const workLoadingProgress = ref(0)
+  const workExtensions = ref([
+    {
+      name: '[快速配置]FastSet',
+      version: '1.2.0',
+      url: 'https://raw.giteeusercontent.com/SandMo/BetterNemo-Extensions/raw/master/Extensions/%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E7%B1%BB/%5B%E5%BF%AB%E9%80%9F%E9%85%8D%E7%BD%AE%5DFastSet/1.2.0/',
+    },
+  ])
   async function goWork(workJson: any, reload?: boolean, newWorkID?: number) {
     try {
       isLoading.value = true
-      workLoadingProgress.value = 0
+      workLoadingProgress.value = 10
       if (!domStore.iframeRef || !domStore.iframeRef.contentWindow) {
-        return
-      }
-      if (reload) {
-        domStore.iframeRef.contentWindow.location.reload()
-      }
-      bcmJson.value = workJson
-      console.log(workJson.project_name)
-      console.log(bcmJson.value.project_name)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      ;(domStore.iframeRef.contentWindow as unknown as any).bnOnline = true
-      clearBridgeInstance()
-      setBridgeInstance(new BNWorkspaceBridge({ value: domStore.iframeRef }))
-      const bridgeInstance = getBridgeInstance()
-      if (!bridgeInstance) {
         return
       }
 
@@ -662,10 +655,24 @@ export const useBNStateStore = defineStore('bnState', () => {
           return
         }
       }
+      workLoadingProgress.value = 30
+
+      if (reload) {
+        domStore.iframeRef.contentWindow.location.reload()
+      }
+      bcmJson.value = workJson
+      console.log(workJson.project_name)
+      console.log(bcmJson.value.project_name)
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      clearBridgeInstance()
+      setBridgeInstance(new BNWorkspaceBridge({ value: domStore.iframeRef }))
+      const bridgeInstance = getBridgeInstance()
+      if (!bridgeInstance) {
+        return
+      }
 
       // 初始化bridge实例
       bridgeInstance.registerListener()
-      workLoadingProgress.value = 30
       bridgeInstance.onMessage = (message: any) => {
         if (!message?.args) {
           return
@@ -731,10 +738,7 @@ export const useBNStateStore = defineStore('bnState', () => {
     if (!domStore.iframeRef || !domStore.iframeRef.contentWindow) {
       return
     }
-    if (reload) {
-      domStore.iframeRef.contentWindow.location.reload()
-    }
-    goWork(JSON.parse(JSON.stringify(defaultBCMJson.value)))
+    goWork(JSON.parse(JSON.stringify(defaultBCMJson.value)), reload)
   }
   async function syncWork() {
     if (!domStore.iframeRef) {
@@ -797,5 +801,6 @@ export const useBNStateStore = defineStore('bnState', () => {
     workLoadingProgress,
     isLoading,
     workId,
+    workExtensions,
   }
 })

@@ -7,7 +7,7 @@ import { downloadString } from "@/utils/blobTools";
 
 import { prompt as mdPrompt } from 'mdui/functions/prompt.js';
 import { useAuthStore } from "@/stores/auth";
-import { setColorScheme } from "mdui";
+import { MenuItem, Select, setColorScheme } from "mdui";
 import { useDomStore } from "@/stores/dom";
 import JSZip from "jszip";
 
@@ -16,9 +16,11 @@ const bnState = useBNStateStore()
 const domStore = useDomStore()
 const aboutDialog = inject('aboutDialog', ref<Dialog | null>(null))
 const loginDialog = inject('loginDialog', ref<Dialog | null>(null))
+const workExtensionsDialog = ref<Dialog | null>(null)
 const fileOpen = ref<HTMLInputElement | null>(null)
 const zipOpen = ref<HTMLInputElement | null>(null)
 const uiColor = ref('#2D0078')
+const needLoadExtensions = ref<{ name: string, workVersion: string, version: (string | null), url: string, isInstall: boolean }[]>([])
 
 const token = localStorage.getItem('token')
 const userId = localStorage.getItem('userId')
@@ -68,7 +70,7 @@ const openFile = () => {
 }
 
 const openZip = async () => {
-  if (!zipOpen.value || !zipOpen.value.files) {
+  if (!zipOpen.value || !zipOpen.value.files || !workExtensionsDialog.value) {
     return
   }
   const file = zipOpen.value.files[0]
@@ -99,8 +101,24 @@ const openZip = async () => {
   for (const [styleId] of Object.entries(workObject?.styles?.styles_dict || {})) {
     workObject.styles.styles_dict[styleId].path = userimgPureBlobList[workObject.styles.styles_dict[styleId].path]
   }
-  console.log(workObject.styles.styles_dict)
-  await bnState.goWork(JSON.parse(JSON.stringify(workObject)), true)
+  // 作品扩展筛选
+  if (zipData.files['extensions.json']) {
+    const extensions = await zipData.files['extensions.json'].async('string')
+    const extensionsObject = JSON.parse(extensions)
+    bnState.workExtensions = extensionsObject?.extensions ?? []
+  };
+  // 这里应该写筛选逻辑,我懒了
+  for (const extension of bnState.workExtensions) {
+    needLoadExtensions.value.push({
+      name: extension?.name,
+      workVersion: extension?.version,
+      version: null,
+      url: extension?.url,
+      isInstall: false
+    })
+  }
+  workExtensionsDialog.value.open = true
+  // await bnState.goWork(JSON.parse(JSON.stringify(workObject)), true)
 }
 
 const saveFile = async () => {
@@ -139,6 +157,19 @@ const changeWorkID = () => {
 const notLogin = async () => {
   authStore.notLogin = !authStore.notLogin
   await bnState.goWork(bnState.bcmJson, true)
+}
+
+
+const changeExtensionInstall = (index: number, event: any) => {
+  if (!needLoadExtensions.value[index]) return;
+  const selectTarget: Select = event.target
+  if (selectTarget.value == '') {
+    selectTarget.value = 'no-event'
+  } else if (selectTarget.value == 'download') {
+    needLoadExtensions.value[index].isInstall = true
+  } else {
+    needLoadExtensions.value[index].isInstall = false
+  }
 }
 
 watch(
@@ -191,13 +222,13 @@ onMounted(() => {
       <mdui-button variant="outlined" slot="trigger" class="pc-menu-button">账号</mdui-button>
       <mdui-menu>
         <mdui-menu-item @click="notLogin()">{{ authStore.notLogin ? '禁用' : '启用'
-          }}离线模式</mdui-menu-item>
+        }}离线模式</mdui-menu-item>
         <mdui-menu-item @click="loginDialog!.open = true" v-if="!token || !userId">登录</mdui-menu-item>
         <mdui-menu-item v-else>
           用户信息
           <mdui-menu-item slot="submenu">昵称: {{ authStore.userData.userInfo.user.nickname }}</mdui-menu-item>
           <mdui-menu-item slot="submenu">性别: {{ authStore.userData.userInfo.user.sex == 1 ? '男' : '女'
-          }}</mdui-menu-item>
+            }}</mdui-menu-item>
           <mdui-menu-item slot="submenu">UID: {{ authStore.userData.userInfo.user.id }}</mdui-menu-item>
         </mdui-menu-item>
       </mdui-menu>
@@ -218,6 +249,41 @@ onMounted(() => {
   </div>
   <input type="file" class="file-open" ref="fileOpen" accept=".json" title="打开 .json 作品" @change="openFile()" />
   <input type="file" class="file-open" ref="zipOpen" accept=".bcmbn" title="打开 .bcmbn 作品" @change="openZip()" />
+  <Teleport to="#app">
+    <mdui-dialog class="work-extensions-dialog" ref="workExtensionsDialog">
+      <span slot="headline">扩展冲突</span>
+      <div class="mdui-table">
+        <table>
+          <thead>
+            <tr>
+              <th>扩展名</th>
+              <th>使用版本</th>
+              <th>本地版本</th>
+              <th>本地存在</th>
+              <th>远程URL</th>
+              <th>执行操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(extension, index) in needLoadExtensions" :key="extension.name">
+              <th class="work-extensions-dialog-text">{{ extension.name }}</th>
+              <th class="work-extensions-dialog-text">{{ extension.workVersion }}</th>
+              <th class="work-extensions-dialog-text">{{ extension.version ?? '-' }}</th>
+              <th class="work-extensions-dialog-text">{{ extension.version ? '是' : '否' }}</th>
+              <th class="work-extensions-dialog-text">{{ extension.url }}</th>
+              <th class="work-extensions-dialog-text">
+                <mdui-select variant="outlined" value="no-event" @change="changeExtensionInstall(index, $event)">
+                  <mdui-menu-item value="no-event" @click="extension.isInstall = false">使用本地版本/不加载扩展</mdui-menu-item>
+                  <mdui-menu-item value="download" disabled @click="extension.isInstall = true">下载扩展并加载</mdui-menu-item>
+                </mdui-select>
+              </th>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <mdui-button slot="action">确定</mdui-button>
+    </mdui-dialog>
+  </Teleport>
 </template>
 <style scoped>
 .top-app-bar-menu {
@@ -234,5 +300,23 @@ onMounted(() => {
   display: none;
 }
 
-.change-color-input {}
+.mdui-table {
+  min-width: 800px;
+  margin: 0;
+}
+
+.work-extensions-dialog::part(body) {
+  overflow: visible;
+}
+
+.work-extensions-dialog::part(panel) {
+  max-width: none;
+}
+
+.work-extensions-dialog-text {
+  word-break: break-all;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  max-width: 800px;
+}
 </style>

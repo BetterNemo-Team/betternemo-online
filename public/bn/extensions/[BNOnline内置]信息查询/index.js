@@ -10,6 +10,7 @@ Extension.metaData = {
 
 (async (Extension) => {
   'use strict';
+  window.bnOnline = true;
   const BN = Extension.API;
   const Block = BN.Block;
   const Toolbox = BN.Toolbox;
@@ -61,6 +62,83 @@ Extension.metaData = {
       BN.log('ConfigPanel', '已设置主题' + themeName);
     }, "procedure-add-param"))
   };
+
+  toolboxXML.push(Toolbox.line("扩展"));
+  toolboxXML.push(Toolbox.button(`UseExtension`, ` 从URL使用扩展 `, async () => {
+    let url = prompt("请输入URL:", "默认URL");
+    function getRandomStr(n = 6) {
+      const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      let str = '';
+      for (let i = 0; i < n; i++) {
+        str += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return str;
+    }
+    function createExtensionAPI(extensionMetaData) {
+      const api = Object.create(BetterNemo);
+      api.addToolbox = function (...args) {
+        extensionToolboxs.push([extensionMetaData.fileName, args]);
+        return args;
+      };
+      api.loadScript = async function (url, isRemote) {
+        if (!isRemote) {
+          await loadScript('extensions/' + extensionMetaData.fileName + '/' + url);
+        }
+        else {
+          await loadScript(url);
+        }
+      };
+      return api;
+    }
+    function loadScript(src) {
+      // if (isCloudflareEnv())
+      //     src = `https://gitee.com/oldsquaw/better-nemo/raw/main/${src}`;
+      if (isPhoneTestEnv())
+        src = `http://192.168.1.11:8080/${src}`;
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.body.appendChild(script);
+      });
+    }
+    const config = storage.get('extension_config');
+    setLoaderInfo(`加载扩展 ${url}`, 2);
+    const key = `远程扩展-${getRandomStr()}`
+    if (config[key] == undefined) {
+      config[key] = true;
+      storage.set('extension_config', config);
+    }
+    const extMetaData = {
+      fileName: key,
+      name: "未命名",
+      version: "",
+      description: "",
+      author: "未知",
+      docs: ""
+    };
+    Object.defineProperty(Extension, 'metaData', {
+      get() { return extMetaData; },
+      set(newValue) {
+        Object.assign(extMetaData, newValue);
+      },
+      configurable: true
+    });
+    const extensionAPI = createExtensionAPI(extMetaData);
+    Extension.API = extensionAPI;
+    await loadScript(url);
+    extensionMetaData[key] = { ...extMetaData };
+    BN.log('ConfigPanel', '已从URL使用扩展' + key);
+    EXTENSION_FILES.push(key)
+    setLoaderInfo('扩展加载完成！', 2);
+    await isElementLoaded('#toolbox-bn');
+    setTimeout(() => {
+      reloadExtension();
+      BetterNemo.log('扩展管理', '已重新加载扩展积木盒');
+    }, 500);
+  }, "procedure-add-param"))
+
   toolboxXML.push(Toolbox.flyout_bottom());
 
   BN.regIcon(`<symbol id="icon-bnonline" viewBox="-33 -33 90 90">

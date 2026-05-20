@@ -19,6 +19,8 @@ const presetBackgroundColor = "#221D4E";
     windowContent = document.querySelector("#floatWindow > div.window-content");
     const injectionDiv = document.querySelector('.injectionDiv');
     if (injectionDiv) {
+
+
       injectionDiv.style.backgroundImage = `url("${backgroundImage}")`;
       injectionDiv.style.backgroundSize = 'contain';
       injectionDiv.style.backgroundRepeat = 'no-repeat';

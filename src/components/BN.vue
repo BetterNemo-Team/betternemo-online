@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onBeforeUnmount, watchEffect } from 'vue'
+import { ref, onBeforeUnmount, watchEffect, onMounted } from 'vue'
 import { snackbar } from "mdui/functions/snackbar.js";
 import { getBridgeInstance, clearBridgeInstance } from '@/utils/bridgeInstance'
 import { useBNStateStore } from "@/stores/bnState";
@@ -11,19 +11,16 @@ import { useDomStore } from '@/stores/dom';
 const bnState = useBNStateStore()
 const domStore = useDomStore()
 const pages = usePagesStore()
-const isLoaded = ref(false)
-
 const iframeRef = ref<any>(null)
 
-function onIframeLoad() {
+onMounted(() => {
   const iframeDom = iframeRef.value
   if (!iframeDom) return
   // 同步真实DOM到Store
   domStore.iframeRef = iframeDom
   // 初始化默认作品
-  if (!isLoaded.value) { bnState.newWork() }
-  isLoaded.value = true
-}
+  bnState.newWork(true)
+})
 
 function onIframeError() {
   console.error('iframe 加载失败')
@@ -51,8 +48,8 @@ watchEffect(() => {
 
 <template>
   <div class="bn-webview">
-    <iframe @error="onIframeError" @load="onIframeLoad" src="/betternemo-online/bn/workspace.html"
-      class="bn-webview-iframe" ref="iframeRef"></iframe>
+    <iframe @error="onIframeError" src="/betternemo-online/bn/workspace.html" class="bn-webview-iframe"
+      ref="iframeRef"></iframe>
   </div>
 </template>
 
