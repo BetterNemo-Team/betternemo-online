@@ -1,48 +1,23 @@
-# betternemo-online
+# BetterNemo-Online
 
-This template should help get you started developing with Vue 3 in Vite.
+BetterNemo 的 Web 版本!
 
-## Recommended IDE Setup
+## 使用
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+访问 `https://hhcl233.github.io/betternemo-online/` 。
 
-## Recommended Browser Setup
+## 本地部署
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+1. Clone该仓库；
+2. `npm install`；
+3. `npm run dev`。
 
-## Type Support for `.vue` Imports in TS
+## Q&A
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+Q1: 如何更新 BetterNemo 版本？
 
-## Customize configuration
+A1: 由于本项目使用的 BetterNemo 经过修改，因此不建议手动更新版本，请等待项目开发者更新。
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+Q2: 我在本项目使用的 BetterNemo 中遇到了 BUG，应该在哪个项目提交 Issue ？
 
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+A2: 请直接向本项目提交 Issue ，若 BUG 在原版 BetterNemo 中也存在，项目开发者会引导你前往 BetterNemo 仓库提交 Issue。

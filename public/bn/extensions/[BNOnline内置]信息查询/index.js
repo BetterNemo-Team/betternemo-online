@@ -5,12 +5,29 @@ Extension.metaData = {
   version: "1.0.0",
   description: "BNOnline辅助扩展",
   author: "BNOnline",
-  docs: ""
+  docs: "",
 };
 
 (async (Extension) => {
   'use strict';
-  window.bnOnline = true;
+  window.bnOnline = {
+    postMessage: (content) => {
+      window.parent.postMessage({
+        "__bn_bridge__": true,
+        "direction": "webview->host",
+        "api": "_dsbridge.call",
+        "args": [
+          "postMessageSyn",
+          "{\"data\":\"{\\\"type\\\":\\\"SHOW_TOAST\\\",\\\"payload\\\":{\\\"text\\\":\\\"" + content + "\\\"}}\"}"
+        ],
+        "method": "postMessageSyn",
+        "arg": {
+          "data": "{\"type\":\"SHOW_TOAST\",\"payload\":{\"text\":\"" + content + "\"}}"
+        },
+        "callbackId": null
+      }, '*');
+    }
+  };
   window.loadURLExtension = async (url) => {
     function getRandomStr(n = 6) {
       const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -26,12 +43,11 @@ Extension.metaData = {
         extensionToolboxs.push([extensionMetaData.fileName, args]);
         return args;
       };
-      api.loadScript = async function (url, isRemote) {
-        if (!isRemote) {
+      api.loadScript = async function (extension, url) {
+        try {
+          await loadScript('extensions/' + extensionMetaData.fileName + '/' + extension);
+        } catch {
           await loadScript('extensions/' + extensionMetaData.fileName + '/' + url);
-        }
-        else {
-          await loadScript(url);
         }
       };
       return api;
@@ -51,6 +67,7 @@ Extension.metaData = {
     }
     const config = storage.get('extension_config');
     setLoaderInfo(`加载扩展 ${url}`, 2);
+    window.bnOnline.postMessage(`正在加载远程扩展 ${url} ...`)
     const key = `远程扩展-${getRandomStr()}`
     if (config[key] == undefined) {
       config[key] = true;
@@ -82,6 +99,7 @@ Extension.metaData = {
     setTimeout(() => {
       reloadExtension();
       BetterNemo.log('扩展管理', '已重新加载扩展积木盒');
+      window.bnOnline.postMessage(`远程扩展 ${url} 加载成功!`)
     }, 500);
   }
   const BN = Extension.API;

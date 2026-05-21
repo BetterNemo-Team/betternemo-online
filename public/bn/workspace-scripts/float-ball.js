@@ -19,8 +19,6 @@ const presetBackgroundColor = "#221D4E";
     windowContent = document.querySelector("#floatWindow > div.window-content");
     const injectionDiv = document.querySelector('.injectionDiv');
     if (injectionDiv) {
-
-
       injectionDiv.style.backgroundImage = `url("${backgroundImage}")`;
       injectionDiv.style.backgroundSize = 'contain';
       injectionDiv.style.backgroundRepeat = 'no-repeat';
@@ -79,7 +77,7 @@ const presetBackgroundColor = "#221D4E";
         windowContent.innerHTML = '<li class="bn-menu-item menu-title"><i class="fas fa-circle-chevron-left"></i><span></span></li>';
         setTimeout(() => {
           const backButton = document.querySelector('#floatWindow > div.window-content > li.menu-title');
-          backButton.ontouchend = (e) => {
+          backButton.ontouchend = e => {
             e.preventDefault();
             e.stopPropagation();
             UI.back(page);
@@ -104,13 +102,13 @@ const presetBackgroundColor = "#221D4E";
       let touchStartTime = 0;
       let startX, startY;
       const MENU_CLICK_MAX_DISTANCE = 20; // 像素
-      menuItem.ontouchstart = (e) => {
+      menuItem.ontouchstart = e => {
         const touch = e.touches[0];
         touchStartTime = Date.now();
         startX = touch.clientX;
         startY = touch.clientY;
       };
-      menuItem.ontouchmove = (e) => {
+      menuItem.ontouchmove = e => {
         if (!touchStartTime) return;
         const touch = e.touches[0];
         const deltaX = Math.abs(touch.clientX - startX);
@@ -119,7 +117,7 @@ const presetBackgroundColor = "#221D4E";
           touchStartTime = 0;
         }
       };
-      menuItem.ontouchend = (e) => {
+      menuItem.ontouchend = e => {
         e.preventDefault();
         e.stopPropagation();
         if (touchStartTime > 0) {
@@ -135,10 +133,11 @@ const presetBackgroundColor = "#221D4E";
       const menuItem = document.createElement('li');
       menuItem.innerHTML = `<label style="margin-right: 10px">${name}</label><input style="width:${width}" type="number" value="${value}"><button>${UI.reset_icon}</button>`;
       menuItem.className = 'bn-menu-input';
-      menuItem.querySelector('input').onchange = (e) => {
-        callback(Number(e.target.value));
-      };
-      menuItem.querySelector('button').onclick = (e) => {
+      const input = menuItem.querySelector('input');
+      input.onchange = e => callback(Number(e.target.value));
+      input.onmousedown = e => e.stopPropagation();
+      input.onclick = e => e.stopPropagation();
+      menuItem.querySelector('button').onclick = e => {
         e.preventDefault();
         e.stopPropagation();
         menuItem.querySelector('input').value = defaultValue;
@@ -149,13 +148,14 @@ const presetBackgroundColor = "#221D4E";
     textInput: (callback, name = '文本', value = '', defaultValue = [''], width = '100px') => {
       if (!Array.isArray(defaultValue)) defaultValue = [defaultValue];
       const menuItem = document.createElement('li');
-      menuItem.innerHTML = `<label style="margin-right: 10px">${name}</label><input style="width:${width}" type="text" value="${value}""><button>${UI.reset_icon}</button>`;
+      menuItem.innerHTML = `<label style="margin-right: 10px">${name}</label><input style="width:${width}" type="text" value="${value}"><button>${UI.reset_icon}</button>`;
       menuItem.className = 'bn-menu-input';
-      menuItem.querySelector('input').onchange = (e) => {
-        callback(e.target.value);
-      };
+      const input = menuItem.querySelector('input');
+      input.onchange = e => callback(e.target.value);
+      input.onmousedown = e => e.stopPropagation();
+      input.onclick = e => e.stopPropagation();
       const resetButton = menuItem.querySelector('button');
-      resetButton.onclick = (e) => {
+      resetButton.onclick = e => {
         const reset_counter = Number(resetButton.getAttribute('reset_counter')) || 0;
         e.preventDefault();
         e.stopPropagation();
@@ -166,7 +166,7 @@ const presetBackgroundColor = "#221D4E";
       };
       windowContent.appendChild(menuItem);
     },
-    selectInput: (callback, name = '选择', options = [['选项1', '1'], ['选项2', '2']],
+    selectInput: (callback, name = '选择', options = [['选项 1', '1'], ['选项 2', '2']],
       value = '', defaultValue = '', width = '100px') => {
       const valueOption = options.find(option => option[1] == value);
       const menuItem = document.createElement('li');
@@ -176,10 +176,11 @@ const presetBackgroundColor = "#221D4E";
       ).join('')}
             </select><button>${UI.reset_icon}</button>`;
       menuItem.className = 'bn-menu-input';
-      menuItem.querySelector('select').onchange = (e) => {
-        callback(e.target.value);
-      };
-      menuItem.querySelector('button').onclick = (e) => {
+      const select = menuItem.querySelector('select');
+      select.onchange = e => callback(e.target.value);
+      select.onmousedown = e => e.stopPropagation();
+      select.onclick = e => e.stopPropagation();
+      menuItem.querySelector('button').onclick = e => {
         e.preventDefault();
         e.stopPropagation();
         menuItem.querySelector('select').value = defaultValue;
@@ -192,12 +193,21 @@ const presetBackgroundColor = "#221D4E";
   const Page = {
     home: () => {
       UI.setStatus('Version: ' + BetterNemoVersion);
-      UI.button(() => { UI.load(Page.clipboard); }, '剪切板', 'clipboard');
-      UI.button(() => { UI.load(Page.extensions); }, '内置扩展', 'puzzle-piece');
-      UI.button(() => { UI.load(Page.theme); }, '主题', 'palette');
-      UI.button(() => { UI.load(Page.editorConfig); }, '编辑器', 'laptop-code');
-      UI.button(() => { UI.load(Page.runtimeConfig); }, '运行时', 'cog');
-      UI.button(() => { UI.load(Page.more); }, '更多', 'ellipsis');
+      if (IS_BN_APP) {
+        UI.button(() => {
+          window.location.href = `https://nemo.codemao.cn/w/${PLAYER_DATA.data.work_id}?is_nemo_player=true`
+        }, '使用Nemo播放器', 'arrow-left');
+        UI.button(() => { UI.load(Page.runtimeConfig); }, '运行时', 'cog');
+        UI.button(() => { UI.load(Page.more); }, '更多', 'ellipsis');
+      }
+      else {
+        UI.button(() => { UI.load(Page.clipboard); }, '剪切板', 'clipboard');
+        UI.button(() => { UI.load(Page.extensions); }, '内置扩展', 'puzzle-piece');
+        UI.button(() => { UI.load(Page.theme); }, '主题', 'palette');
+        UI.button(() => { UI.load(Page.editorConfig); }, '编辑器', 'laptop-code');
+        UI.button(() => { UI.load(Page.runtimeConfig); }, '运行时', 'cog');
+        UI.button(() => { UI.load(Page.more); }, '更多', 'ellipsis');
+      }
     },
     error: (error = "未知错误") => {
       UI.setTitle('错误');
@@ -312,13 +322,14 @@ const presetBackgroundColor = "#221D4E";
     experimentalConfig: () => {
       UI.setTitle('实验性功能');
       UI.setStatus('这些功能<del>可能</del>会导致问题。');
+      function save() { storage.set('experimentalConfig', experimentalConfig); }
       UI.selectInput(
-        (value) => { experimentalConfig.disable_repeat_forever_in_warp = value; },
+        (value) => { experimentalConfig.disable_repeat_forever_in_warp = value; save(); },
         '禁用一步执行中的死循环', [['开', true], ['关', false]],
         experimentalConfig.disable_repeat_forever_in_warp, false, '60px'
       );
       UI.selectInput(
-        (value) => { experimentalConfig.webview_debug = value; },
+        (value) => { experimentalConfig.webview_debug = value; save(); },
         'webview调试', [['开', true], ['关', false]],
         experimentalConfig.webview_debug, false, '60px'
       );
@@ -492,25 +503,6 @@ const presetBackgroundColor = "#221D4E";
     }
   };
   UI.home = Page.home;
-  // 双击隐藏悬浮球
-  let lastTouchEnd = 0;
-  function handleTouchend(event) {
-    const now = (new Date()).getTime();
-    if (now - lastTouchEnd <= 200) {
-      event.preventDefault();
-      // 查找被点击的元素是否包含在 #workspace 内
-      let targetElement = event.target;
-      const workspaceElement = document.querySelector("#workspace > div > svg.blocklySvg");
-      if (workspaceElement && workspaceElement.contains(targetElement)) {
-        if (floatBall.classList.contains('hide')) floatBall.classList.remove('hide');
-        else floatBall.classList.add('hide');
-      }
-      lastTouchEnd = 0;
-    } else {
-      lastTouchEnd = now;
-    }
-  }
-  document.addEventListener('touchend', handleTouchend, false);
   // 关闭悬浮窗口
   function closeFloatWindow() {
     floatWindow.classList.remove('active');
@@ -606,7 +598,7 @@ const presetBackgroundColor = "#221D4E";
     floatBall.style.opacity = '1';
   }
   // 更新悬浮窗口位置
-  function updateWindowPosition() {
+  function updateWindowPosition(ballX, ballY) {
     const ballRect = floatBall.getBoundingClientRect();
     const windowRect = floatWindow.getBoundingClientRect();
 

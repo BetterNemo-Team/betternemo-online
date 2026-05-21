@@ -140,49 +140,6 @@ if (!PLAYER && isPCTestEnv()) {
 // --------------- 扩展、主题数据初始化 ---------------
 let extensionMetaData = {};
 let themeMetaData = {};
-// --------------- 劫持Nemo向Webview发送的数据 ---------------
-let ok = false;
-let theatreTimer = null;
-const originalPostMessage = window._dsf.postMessage;
-const originalPostMessageAsync = window._dsaf.postMessageAsyn;
-setInterval(() => {
-  // window._dsInit = true;
-  if (window._dsf && window.originalPostMessage) {
-    window['postMsg'] = _dsf.postMessage;
-    _dsf.postMessage = (...args) => {
-      if (experimentalConfig.webview_debug) {
-        console.log('[Nemo -> Webview]', ...args);
-        debugServer.send(JSON.stringify({
-          type: 'n2w',
-          data: [...args]
-        }));
-      }
-      if (args.length === 2) {
-        if (args[0] === 'INIT_WEBVIEW_DATA') {
-          let data = JSON.parse(args[1]);
-          data.context_menu_with_set_block_visibility = true;
-          data.translucent_block_visible = 'translucent';
-          return originalPostMessage.apply(_dsf, [
-            'INIT_WEBVIEW_DATA',
-            JSON.stringify(data)
-          ]);
-        }
-      }
-      return originalPostMessage.apply(_dsf, args);
-    };
-    window['postMsgAsyn'] = _dsaf.postMessageAsyn;
-    _dsaf.postMessageAsyn = async (...args) => {
-      if (experimentalConfig.webview_debug) {
-        console.log('[Nemo -> Webview] [ASYNC]', ...args);
-        debugServer.send(JSON.stringify({
-          type: 'n2w async',
-          data: [...args]
-        }));
-      }
-      return originalPostMessageAsync.apply(_dsaf, args);
-    };
-  }
-}, 10);
 // --------------- 加载页面 ---------------
 (async () => {
   setLoaderInfo('获取扩展列表...');
