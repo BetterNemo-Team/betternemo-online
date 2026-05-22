@@ -47,7 +47,8 @@ Extension.metaData = {
         try {
           await loadScript('extensions/' + extensionMetaData.fileName + '/' + extension);
         } catch {
-          await loadScript('extensions/' + extensionMetaData.fileName + '/' + url);
+          if (!url) return;
+          await loadScript(url);
         }
       };
       return api;
@@ -79,7 +80,8 @@ Extension.metaData = {
       version: "",
       description: "",
       author: "未知",
-      docs: ""
+      docs: "",
+      url: ''
     };
     Object.defineProperty(Extension, 'metaData', {
       get() { return extMetaData; },

@@ -517,7 +517,8 @@ function reloadExtension() {
       try {
         await loadScript('extensions/' + extensionMetaData.fileName + '/' + extension);
       } catch {
-        await loadScript('extensions/' + extensionMetaData.fileName + '/' + url);
+        if (!url) return;
+        await loadScript(url);
       }
     };
     return api;
