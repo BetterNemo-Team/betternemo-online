@@ -793,11 +793,11 @@ export const useBNStateStore = defineStore('bnState', () => {
     bcmJson.value.split_options.options_dict = workResult.split_options as any
     bcmJson.value.extensions = []
     for (const extension of Object.values(extensions)) {
-      if (extension?.name == 'BNOnline') continue
+      if ((extension as any).name == 'BNOnline') continue
       ;(bcmJson.value.extensions as Array<any>).push({
-        name: extension?.fileName,
-        version: extension?.version,
-        url: extension?.url,
+        name: (extension as any).fileName,
+        version: (extension as any).version,
+        url: (extension as any).url,
       })
       console.log(111)
     }

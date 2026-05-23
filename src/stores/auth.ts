@@ -75,8 +75,9 @@ export const useAuthStore = defineStore('auth', () => {
       return { success: false, error: err }
     }
   }
-  function changeShowLogin(value: boolean) {
+  async function changeShowLogin(value: boolean) {
     showLogin.value = value
+    await bnState.goWork(bnState.bcmJson, true)
   }
   return { userData, getUserData, loginUser, showLogin, changeShowLogin, notLogin }
 })

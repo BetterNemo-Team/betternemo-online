@@ -61,6 +61,11 @@ const loginCodemao = async (e: SubmitEvent) => {
   }
 }
 
+const notLogin = async () => {
+  authStore.notLogin = true
+  authStore.changeShowLogin(false)
+}
+
 onMounted(() => {
   if (!loginDialog.value) {
     return
@@ -123,7 +128,7 @@ provide('loginDialog', loginDialog)
       <mdui-text-field label="密码" toggle-password name="password" type="password" form="loginDialogForm"
         required></mdui-text-field>
     </form>
-    <mdui-button slot="action" @click="authStore.changeShowLogin(false)" variant="text">取消</mdui-button>
+    <mdui-button slot="action" @click="notLogin()" variant="text">取消</mdui-button>
     <mdui-button slot="action" type="submit" form="loginDialogForm">确定</mdui-button>
   </mdui-dialog>
 </template>
