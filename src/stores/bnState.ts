@@ -649,12 +649,10 @@ export const useBNStateStore = defineStore('bnState', () => {
         try {
           const data = await authStore.getUserData()
           if (!data.success) {
-            console.log(`无法加载账号信息`)
-            return
+            throw new Error(`无法加载账号信息`)
           }
         } catch (e) {
-          console.log(`登录账号出现问题:${e}`)
-          return
+          throw new Error(`登录账号出现问题:${e}`)
         }
       }
       workLoadingProgress.value = 30
@@ -663,8 +661,6 @@ export const useBNStateStore = defineStore('bnState', () => {
         domStore.iframeRef.contentWindow.location.reload()
       }
       bcmJson.value = workJson
-      console.log(workJson.project_name)
-      console.log(bcmJson.value.project_name)
       await new Promise((resolve) => setTimeout(resolve, 1000))
       clearBridgeInstance()
       setBridgeInstance(new BNWorkspaceBridge({ value: domStore.iframeRef }))

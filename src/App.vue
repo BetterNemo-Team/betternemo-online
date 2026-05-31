@@ -140,7 +140,7 @@ provide('loginDialog', loginDialog)
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 1;
   border-radius: 0;
   height: 100%;
   width: 100%;
