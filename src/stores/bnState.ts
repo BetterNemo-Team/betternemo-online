@@ -661,73 +661,77 @@ export const useBNStateStore = defineStore('bnState', () => {
         domStore.iframeRef.contentWindow.location.reload()
       }
       bcmJson.value = workJson
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      clearBridgeInstance()
-      setBridgeInstance(new BNWorkspaceBridge({ value: domStore.iframeRef }))
-      const bridgeInstance = getBridgeInstance()
-      if (!bridgeInstance) {
-        return
-      }
-
-      // 初始化bridge实例
-      bridgeInstance.registerListener()
-      bridgeInstance.onMessage = (message: any) => {
-        if (!message?.args) {
+      const iframeLoad = async () => {
+        domStore.iframeRef?.removeEventListener('load', iframeLoad)
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        clearBridgeInstance()
+        setBridgeInstance(new BNWorkspaceBridge({ value: domStore.iframeRef }))
+        const bridgeInstance = getBridgeInstance()
+        if (!bridgeInstance) {
           return
         }
-        let data_arg: any = {}
-        if (Object.prototype.toString.call(message?.args[1]) != '[object Object]') {
-          data_arg = JSON.parse(message?.args[1])
-        } else {
-          data_arg = message?.args[1]
+
+        // 初始化bridge实例
+        bridgeInstance.registerListener()
+        bridgeInstance.onMessage = (message: any) => {
+          if (!message?.args) {
+            return
+          }
+          let data_arg: any = {}
+          if (Object.prototype.toString.call(message?.args[1]) != '[object Object]') {
+            data_arg = JSON.parse(message?.args[1])
+          } else {
+            data_arg = message?.args[1]
+          }
+          if (!data_arg?.data) {
+            return
+          }
+          const data_object = JSON.parse(data_arg?.data)
+          switch (data_object?.type) {
+            case 'SHOW_TOAST':
+              snackbar({
+                message: data_object?.payload?.text,
+                closeable: true,
+              })
+          }
         }
-        if (!data_arg?.data) {
+
+        if (!isLoading.value) {
+          console.log('作品已加载,不重复加载')
           return
         }
-        const data_object = JSON.parse(data_arg?.data)
-        switch (data_object?.type) {
-          case 'SHOW_TOAST':
-            snackbar({
-              message: data_object?.payload?.text,
-              closeable: true,
-            })
+
+        if (newWorkID) {
+          workId.value = newWorkID
         }
+        actorList.value = []
+        // 解析bcmJson.value
+        Object.entries(bcmJson.value.actors.actors_dict).forEach(([_, value]) => {
+          actorList.value.push(value)
+        })
+        currentActor.value = bcmJson.value.actors.current_actor
+
+        // 初始化数据
+        console.log('BN iframe 加载完成')
+        workLoadingProgress.value = 60
+
+        // 设置用户数据
+        bridgeInstance.initWebviewData(
+          String(authStore.userData.userInfo.user.id),
+          String(newWorkID ?? workId.value),
+          authStore.userData.userInfo.user.nickname,
+          isPad.value,
+          authStore.userData.userInfo.user.avatar,
+        )
+        workLoadingProgress.value = 90
+        const pureBcmJson = JSON.parse(JSON.stringify(workJson))
+        bridgeInstance.sendBridgeMessage('_dsaf.postMessageAsyn', ['LOAD_BCM', pureBcmJson])
+        workLoadingProgress.value = 100
+        setTimeout(() => {
+          isLoading.value = false
+        }, 500)
       }
-
-      if (!isLoading.value) {
-        console.log('作品已加载,不重复加载')
-        return
-      }
-
-      if (newWorkID) {
-        workId.value = newWorkID
-      }
-      actorList.value = []
-      // 解析bcmJson.value
-      Object.entries(bcmJson.value.actors.actors_dict).forEach(([_, value]) => {
-        actorList.value.push(value)
-      })
-      currentActor.value = bcmJson.value.actors.current_actor
-
-      // 初始化数据
-      console.log('BN iframe 加载完成')
-      workLoadingProgress.value = 60
-
-      // 设置用户数据
-      bridgeInstance.initWebviewData(
-        String(authStore.userData.userInfo.user.id),
-        String(newWorkID ?? workId.value),
-        authStore.userData.userInfo.user.nickname,
-        isPad.value,
-        authStore.userData.userInfo.user.avatar,
-      )
-      workLoadingProgress.value = 90
-      const pureBcmJson = JSON.parse(JSON.stringify(workJson))
-      bridgeInstance.sendBridgeMessage('_dsaf.postMessageAsyn', ['LOAD_BCM', pureBcmJson])
-      workLoadingProgress.value = 100
-      setTimeout(() => {
-        isLoading.value = false
-      }, 500)
+      domStore.iframeRef.addEventListener('load', iframeLoad)
     } catch (error) {
       console.error('加载iframe失败:', error)
     }
