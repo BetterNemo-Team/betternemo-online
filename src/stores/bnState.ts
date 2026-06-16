@@ -663,7 +663,6 @@ export const useBNStateStore = defineStore('bnState', () => {
       bcmJson.value = workJson
       const iframeLoad = async () => {
         domStore.iframeRef?.removeEventListener('load', iframeLoad)
-        await new Promise((resolve) => setTimeout(resolve, 1000))
         clearBridgeInstance()
         setBridgeInstance(new BNWorkspaceBridge({ value: domStore.iframeRef }))
         const bridgeInstance = getBridgeInstance()
@@ -730,6 +729,8 @@ export const useBNStateStore = defineStore('bnState', () => {
         setTimeout(() => {
           isLoading.value = false
         }, 500)
+        if (!domStore.iframeRef?.contentWindow?.isElementLoaded) return;
+        await domStore.iframeRef?.contentWindow?.isElementLoaded('#toolbox-bn');
       }
       domStore.iframeRef.addEventListener('load', iframeLoad)
     } catch (error) {
@@ -794,11 +795,11 @@ export const useBNStateStore = defineStore('bnState', () => {
     bcmJson.value.extensions = []
     for (const extension of Object.values(extensions)) {
       if ((extension as any).name == 'BNOnline') continue
-      ;(bcmJson.value.extensions as Array<any>).push({
-        name: (extension as any).fileName,
-        version: (extension as any).version,
-        url: (extension as any).url,
-      })
+        ; (bcmJson.value.extensions as Array<any>).push({
+          name: (extension as any).fileName,
+          version: (extension as any).version,
+          url: (extension as any).url,
+        })
       console.log(111)
     }
   }

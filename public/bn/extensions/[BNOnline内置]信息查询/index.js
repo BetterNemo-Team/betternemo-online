@@ -1,5 +1,6 @@
 /// <reference path="../_TYPE.d.ts"/>
 
+// 如果你不清楚此扩展的功能,请不要修改此扩展!
 Extension.metaData = {
   name: "BNOnline",
   version: "1.0.0",
