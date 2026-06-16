@@ -10,6 +10,8 @@ import { usePagesStore } from "@/stores/pages";
 
 const bnState = useBNStateStore()
 const pages = usePagesStore()
+
+
 const jsonText = computed({
   get() {
     return JSON.stringify(bnState.bcmJson, null, 4)
